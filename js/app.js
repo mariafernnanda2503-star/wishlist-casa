@@ -7,7 +7,8 @@ const state = {
   filterArea: 'all',
   filterCategory: 'all',
   editingId: null,
-  openFilterMenu: null,
+  editingPriorityId: null,
+  search: '',
 };
 
 function formatPrice(value) {
@@ -115,6 +116,15 @@ async function toggleStatus(item) {
   }
 }
 
+async function updatePriority(id, priority) {
+  const { error } = await supabaseClient.from('items').update({ priority }).eq('id', id);
+  if (error) {
+    state.error = 'Não consegui atualizar a prioridade.';
+  }
+  state.editingPriorityId = null;
+  render();
+}
+
 async function deleteItem(id) {
   const { error } = await supabaseClient.from('items').delete().eq('id', id);
   if (error) {
@@ -124,9 +134,11 @@ async function deleteItem(id) {
 }
 
 function filteredItems() {
+  const search = state.search.trim().toLowerCase();
   return state.items.filter((item) => {
     if (state.filterArea !== 'all' && item.area_id !== state.filterArea) return false;
     if (state.filterCategory !== 'all' && item.category_id !== state.filterCategory) return false;
+    if (search && !item.name.toLowerCase().includes(search)) return false;
     return true;
   });
 }
@@ -138,6 +150,11 @@ function render() {
     app.innerHTML = '<p class="loading">Carregando...</p>';
     return;
   }
+
+  const hasActiveFilter = state.filterArea !== 'all' || state.filterCategory !== 'all' || state.search.trim() !== '';
+  const emptyMessage = hasActiveFilter
+    ? 'Nenhum item encontrado com esse filtro/busca.'
+    : 'Nada por aqui ainda.';
 
   const items = filteredItems();
   const pending = items
@@ -188,54 +205,51 @@ function render() {
       </form>
     </details>
 
+    <div class="toolbar">
+      <input type="text" id="search-input" class="search-input" placeholder="🔎 Buscar produto..." value="${escapeHtml(state.search)}" />
+      <div class="filters">
+        <select id="filter-area">
+          <option value="all">Todas as áreas</option>
+          ${state.areas.map((a) => `<option value="${a.id}" ${state.filterArea === a.id ? 'selected' : ''}>${escapeHtml(a.name)}</option>`).join('')}
+        </select>
+        <select id="filter-category">
+          <option value="all">Todas as categorias</option>
+          ${state.categories.map((c) => `<option value="${c.id}" ${state.filterCategory === c.id ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+
     <section>
       <h2 class="section-title">Pendentes <span class="count">${pending.length}</span></h2>
-      ${renderTable(pending)}
+      ${renderTable(pending, emptyMessage)}
     </section>
 
     ${purchased.length ? `
       <section>
         <h2 class="section-title">Já comprados <span class="count">${purchased.length}</span></h2>
-        ${renderTable(purchased)}
+        ${renderTable(purchased, emptyMessage)}
       </section>
     ` : ''}
   `;
 
   document.getElementById('add-form').addEventListener('submit', onSubmitAdd);
+  document.getElementById('search-input').addEventListener('input', (e) => {
+    state.search = e.target.value;
+    render();
+  });
+  document.getElementById('filter-area').addEventListener('change', (e) => {
+    state.filterArea = e.target.value;
+    render();
+  });
+  document.getElementById('filter-category').addEventListener('change', (e) => {
+    state.filterCategory = e.target.value;
+    render();
+  });
 }
 
-function renderFilterHeader(column, label, options, currentValue) {
-  const isOpen = state.openFilterMenu === column;
-  const isActive = currentValue !== 'all';
-  const activeName = isActive ? options.find((o) => o.id === currentValue)?.name : null;
-
-  const menu = isOpen ? `
-    <div class="filter-menu">
-      <button type="button" class="filter-option ${currentValue === 'all' ? 'selected' : ''}" data-action="set-filter" data-column="${column}" data-value="all">
-        Todas
-      </button>
-      ${options.map((o) => `
-        <button type="button" class="filter-option ${currentValue === o.id ? 'selected' : ''}" data-action="set-filter" data-column="${column}" data-value="${o.id}">
-          ${escapeHtml(o.name)}
-        </button>
-      `).join('')}
-    </div>
-  ` : '';
-
-  return `
-    <th class="col-filter">
-      <button type="button" class="filter-header ${isActive ? 'active' : ''}" data-action="toggle-filter" data-column="${column}">
-        ${escapeHtml(activeName || label)}
-        <span class="filter-caret">▾</span>
-      </button>
-      ${menu}
-    </th>
-  `;
-}
-
-function renderTable(items) {
+function renderTable(items, emptyMessage) {
   if (!items.length) {
-    return '<p class="empty">Nada por aqui ainda.</p>';
+    return `<p class="empty">${emptyMessage}</p>`;
   }
 
   return `
@@ -246,8 +260,8 @@ function renderTable(items) {
             <th class="col-check"></th>
             <th>Produto</th>
             <th class="col-priority">Prioridade</th>
-            ${renderFilterHeader('area', 'Área', state.areas, state.filterArea)}
-            ${renderFilterHeader('category', 'Categoria', state.categories, state.filterCategory)}
+            <th>Área</th>
+            <th>Categoria</th>
             <th class="col-qty">Qtd</th>
             <th class="col-price">Preço</th>
             <th class="col-link">Link</th>
@@ -259,6 +273,25 @@ function renderTable(items) {
         </tbody>
       </table>
     </div>
+  `;
+}
+
+function renderPriorityCell(item) {
+  if (state.editingPriorityId === item.id) {
+    return `
+      <div class="priority-picker">
+        ${Object.keys(PRIORITY_LABEL).map((key) => `
+          <button type="button" class="priority-option" data-action="set-priority" data-id="${item.id}" data-priority="${key}">
+            ${PRIORITY_LABEL[key]}
+          </button>
+        `).join('')}
+      </div>
+    `;
+  }
+  return `
+    <button type="button" class="tag tag-priority-${item.priority} tag-btn" data-action="open-priority" data-id="${item.id}">
+      ${PRIORITY_LABEL[item.priority] || PRIORITY_LABEL.media}
+    </button>
   `;
 }
 
@@ -276,7 +309,7 @@ function renderRow(item) {
           ${item.note ? `<div class="note">${escapeHtml(item.note)}</div>` : ''}
         </button>
       </td>
-      <td class="col-priority"><span class="tag tag-priority-${item.priority}">${PRIORITY_LABEL[item.priority] || PRIORITY_LABEL.media}</span></td>
+      <td class="col-priority">${renderPriorityCell(item)}</td>
       <td><span class="tag tag-area">${escapeHtml(areaName(item.area_id))}</span></td>
       <td><span class="tag tag-category">${escapeHtml(categoryName(item.category_id))}</span></td>
       <td class="col-qty">${item.quantity > 1 ? `×${item.quantity}` : ''}</td>
@@ -378,24 +411,18 @@ document.getElementById('app').addEventListener('click', (e) => {
   } else if (action === 'cancel-edit') {
     state.editingId = null;
     render();
-  } else if (action === 'toggle-filter') {
-    const column = target.getAttribute('data-column');
-    state.openFilterMenu = state.openFilterMenu === column ? null : column;
+  } else if (action === 'open-priority') {
+    state.editingPriorityId = id;
     render();
-  } else if (action === 'set-filter') {
-    const column = target.getAttribute('data-column');
-    const value = target.getAttribute('data-value');
-    if (column === 'area') state.filterArea = value;
-    if (column === 'category') state.filterCategory = value;
-    state.openFilterMenu = null;
-    render();
+  } else if (action === 'set-priority') {
+    updatePriority(id, target.getAttribute('data-priority'));
   }
 });
 
 document.addEventListener('mousedown', (e) => {
-  if (!state.openFilterMenu) return;
-  if (e.target.closest('.col-filter')) return;
-  state.openFilterMenu = null;
+  if (!state.editingPriorityId) return;
+  if (e.target.closest('.col-priority')) return;
+  state.editingPriorityId = null;
   render();
 });
 

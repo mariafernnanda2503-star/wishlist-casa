@@ -133,12 +133,19 @@ async function deleteItem(id) {
   }
 }
 
+function normalizeText(str) {
+  return str
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase();
+}
+
 function filteredItems() {
-  const search = state.search.trim().toLowerCase();
+  const search = normalizeText(state.search.trim());
   return state.items.filter((item) => {
     if (state.filterArea !== 'all' && item.area_id !== state.filterArea) return false;
     if (state.filterCategory !== 'all' && item.category_id !== state.filterCategory) return false;
-    if (search && !item.name.toLowerCase().includes(search)) return false;
+    if (search && !normalizeText(item.name).includes(search)) return false;
     return true;
   });
 }
@@ -150,6 +157,10 @@ function render() {
     app.innerHTML = '<p class="loading">Carregando...</p>';
     return;
   }
+
+  const activeElement = document.activeElement;
+  const wasSearchFocused = activeElement && activeElement.id === 'search-input';
+  const searchCursorPos = wasSearchFocused ? activeElement.selectionStart : null;
 
   const hasActiveFilter = state.filterArea !== 'all' || state.filterCategory !== 'all' || state.search.trim() !== '';
   const emptyMessage = hasActiveFilter
@@ -233,10 +244,15 @@ function render() {
   `;
 
   document.getElementById('add-form').addEventListener('submit', onSubmitAdd);
-  document.getElementById('search-input').addEventListener('input', (e) => {
+  const searchInput = document.getElementById('search-input');
+  searchInput.addEventListener('input', (e) => {
     state.search = e.target.value;
     render();
   });
+  if (wasSearchFocused) {
+    searchInput.focus();
+    searchInput.setSelectionRange(searchCursorPos, searchCursorPos);
+  }
   document.getElementById('filter-area').addEventListener('change', (e) => {
     state.filterArea = e.target.value;
     render();

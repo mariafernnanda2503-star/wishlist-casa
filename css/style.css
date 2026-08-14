@@ -1,0 +1,394 @@
+:root {
+  --bg: #FAF9F6;
+  --surface: #FFFFFF;
+  --surface-alt: #F4F2EC;
+  --border: #E5E2DA;
+  --text: #22201C;
+  --text-soft: #757066;
+  --accent: #2F6E5B;
+  --accent-soft: #E4EEE9;
+  --category-soft: #EFEAF5;
+  --category-text: #6B4F94;
+  --danger: #B23A3A;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+#app {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 16px 16px 48px;
+}
+
+.loading {
+  text-align: center;
+  color: var(--text-soft);
+  padding: 60px 0;
+}
+
+.header {
+  padding: 8px 0 16px;
+}
+
+.header h1 {
+  font-size: 22px;
+  margin: 0;
+}
+
+.banner {
+  background: #FBEAEA;
+  border: 1px solid #E9C4C4;
+  color: var(--danger);
+  font-size: 13px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.add-details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.add-details summary {
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+  list-style: none;
+}
+
+.add-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 14px 14px;
+}
+
+.add-form .row {
+  display: flex;
+  gap: 8px;
+}
+
+.add-form .row > * {
+  flex: 1;
+  min-width: 0;
+}
+
+.add-form input,
+.add-form select {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 11px 12px;
+  font-size: 15px;
+  font-family: inherit;
+  width: 100%;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.add-form input:focus,
+.add-form select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.add-form button {
+  border: none;
+  background: var(--accent);
+  color: white;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.add-form button:active {
+  opacity: 0.85;
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.filters select {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 10px;
+  font-size: 13.5px;
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--text-soft);
+}
+
+.section-title {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-soft);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px 2px;
+}
+
+.section-title .count {
+  background: var(--border);
+  color: var(--text);
+  border-radius: 20px;
+  padding: 1px 8px;
+  font-size: 12px;
+}
+
+.empty {
+  color: var(--text-soft);
+  font-size: 14px;
+  padding: 8px 2px 20px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 24px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+thead th {
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-soft);
+  font-weight: 600;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-alt);
+  white-space: nowrap;
+}
+
+tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tr.purchased {
+  opacity: 0.55;
+}
+
+.col-check, .col-link, .col-del {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.col-price {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.check {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 0;
+}
+
+tr.purchased .check {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.name-btn {
+  display: block;
+  border: none;
+  background: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.name {
+  font-weight: 500;
+  min-width: 140px;
+}
+
+.name-btn:hover .name {
+  text-decoration: underline;
+  text-decoration-color: var(--border);
+}
+
+tr.purchased .name {
+  text-decoration: line-through;
+}
+
+.note {
+  font-size: 12px;
+  color: var(--text-soft);
+  font-style: italic;
+  margin-top: 2px;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.tag-area {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.tag-category {
+  background: var(--category-soft);
+  color: var(--category-text);
+}
+
+.price {
+  font-weight: 600;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.col-link a {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 15px;
+}
+
+.del {
+  border: none;
+  background: none;
+  color: var(--text-soft);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.del:active {
+  color: var(--danger);
+}
+
+tr.editing td {
+  padding: 12px;
+  background: var(--surface-alt);
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.edit-form .row {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-form .row > * {
+  flex: 1;
+  min-width: 0;
+}
+
+.edit-form input,
+.edit-form select {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 11px;
+  font-size: 14.5px;
+  font-family: inherit;
+  width: 100%;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.edit-form input:focus,
+.edit-form select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.edit-actions {
+  margin-top: 2px;
+}
+
+.btn-save,
+.btn-cancel {
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-save {
+  background: var(--accent);
+  color: white;
+}
+
+.btn-cancel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-soft);
+}
+
+.btn-save:active,
+.btn-cancel:active {
+  opacity: 0.85;
+}
+
+@media (max-width: 560px) {
+  #app {
+    padding: 12px 10px 40px;
+  }
+}

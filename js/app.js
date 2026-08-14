@@ -144,7 +144,7 @@ function render() {
 
   app.innerHTML = `
     <header class="header">
-      <h1>Wishlist da Casa</h1>
+      <h1>🏠 Wishlist da Casa</h1>
     </header>
 
     ${errorBanner}

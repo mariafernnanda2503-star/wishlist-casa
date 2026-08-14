@@ -18,6 +18,7 @@ create table items (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   price numeric(10, 2),
+  quantity int not null default 1,
   link text,
   note text,
   status text not null default 'pending' check (status in ('pending', 'purchased')),

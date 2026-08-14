@@ -7,6 +7,7 @@ const state = {
   filterArea: 'all',
   filterCategory: 'all',
   editingId: null,
+  openFilterMenu: null,
 };
 
 function formatPrice(value) {
@@ -57,10 +58,11 @@ async function loadAll() {
   render();
 }
 
-async function addItem({ name, price, link, note, areaId, categoryId }) {
+async function addItem({ name, price, quantity, link, note, areaId, categoryId }) {
   const { error } = await supabaseClient.from('items').insert({
     name,
     price,
+    quantity,
     link: link || null,
     note: note || null,
     area_id: areaId || null,
@@ -72,12 +74,13 @@ async function addItem({ name, price, link, note, areaId, categoryId }) {
   }
 }
 
-async function updateItem(id, { name, price, link, note, areaId, categoryId }) {
+async function updateItem(id, { name, price, quantity, link, note, areaId, categoryId }) {
   const { error } = await supabaseClient
     .from('items')
     .update({
       name,
       price,
+      quantity,
       link: link || null,
       note: note || null,
       area_id: areaId || null,
@@ -155,6 +158,7 @@ function render() {
         <input type="text" id="input-name" placeholder="Nome do produto" required />
         <div class="row">
           <input type="text" id="input-price" placeholder="Preço médio (ex: 149,90, opcional)" inputmode="decimal" />
+          <input type="number" id="input-quantity" placeholder="Qtd" min="1" value="1" inputmode="numeric" />
         </div>
         <div class="row">
           <select id="input-area">
@@ -172,17 +176,6 @@ function render() {
       </form>
     </details>
 
-    <div class="filters">
-      <select id="filter-area">
-        <option value="all">Todas as áreas</option>
-        ${state.areas.map((a) => `<option value="${a.id}" ${state.filterArea === a.id ? 'selected' : ''}>${escapeHtml(a.name)}</option>`).join('')}
-      </select>
-      <select id="filter-category">
-        <option value="all">Todas as categorias</option>
-        ${state.categories.map((c) => `<option value="${c.id}" ${state.filterCategory === c.id ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}
-      </select>
-    </div>
-
     <section>
       <h2 class="section-title">Pendentes <span class="count">${pending.length}</span></h2>
       ${renderTable(pending)}
@@ -197,14 +190,35 @@ function render() {
   `;
 
   document.getElementById('add-form').addEventListener('submit', onSubmitAdd);
-  document.getElementById('filter-area').addEventListener('change', (e) => {
-    state.filterArea = e.target.value;
-    render();
-  });
-  document.getElementById('filter-category').addEventListener('change', (e) => {
-    state.filterCategory = e.target.value;
-    render();
-  });
+}
+
+function renderFilterHeader(column, label, options, currentValue) {
+  const isOpen = state.openFilterMenu === column;
+  const isActive = currentValue !== 'all';
+  const activeName = isActive ? options.find((o) => o.id === currentValue)?.name : null;
+
+  const menu = isOpen ? `
+    <div class="filter-menu">
+      <button type="button" class="filter-option ${currentValue === 'all' ? 'selected' : ''}" data-action="set-filter" data-column="${column}" data-value="all">
+        Todas
+      </button>
+      ${options.map((o) => `
+        <button type="button" class="filter-option ${currentValue === o.id ? 'selected' : ''}" data-action="set-filter" data-column="${column}" data-value="${o.id}">
+          ${escapeHtml(o.name)}
+        </button>
+      `).join('')}
+    </div>
+  ` : '';
+
+  return `
+    <th class="col-filter">
+      <button type="button" class="filter-header ${isActive ? 'active' : ''}" data-action="toggle-filter" data-column="${column}">
+        ${escapeHtml(activeName || label)}
+        <span class="filter-caret">▾</span>
+      </button>
+      ${menu}
+    </th>
+  `;
 }
 
 function renderTable(items) {
@@ -219,10 +233,11 @@ function renderTable(items) {
           <tr>
             <th class="col-check"></th>
             <th>Produto</th>
-            <th>Área</th>
-            <th>Categoria</th>
+            ${renderFilterHeader('area', 'Área', state.areas, state.filterArea)}
+            ${renderFilterHeader('category', 'Categoria', state.categories, state.filterCategory)}
+            <th class="col-qty">Qtd</th>
             <th class="col-price">Preço</th>
-            <th class="col-link"></th>
+            <th class="col-link">Link</th>
             <th class="col-del"></th>
           </tr>
         </thead>
@@ -250,8 +265,9 @@ function renderRow(item) {
       </td>
       <td><span class="tag tag-area">${escapeHtml(areaName(item.area_id))}</span></td>
       <td><span class="tag tag-category">${escapeHtml(categoryName(item.category_id))}</span></td>
+      <td class="col-qty">${item.quantity > 1 ? `×${item.quantity}` : ''}</td>
       <td class="col-price price">${formatPrice(item.price)}</td>
-      <td class="col-link">${item.link ? `<a href="${escapeHtml(item.link)}" target="_blank" rel="noopener noreferrer" title="Ver produto">↗</a>` : ''}</td>
+      <td class="col-link">${item.link ? `<a class="link-icon" href="${escapeHtml(item.link)}" target="_blank" rel="noopener noreferrer" title="Ver produto">🔗</a>` : ''}</td>
       <td class="col-del"><button class="del" data-action="delete" data-id="${item.id}" title="Remover">×</button></td>
     </tr>
   `;
@@ -264,11 +280,12 @@ function renderEditRow(item) {
 
   return `
     <tr class="editing">
-      <td colspan="7">
+      <td colspan="8">
         <form class="edit-form" data-action="save-edit" data-id="${item.id}">
           <div class="row">
             <input type="text" class="edit-name" placeholder="Nome do produto" value="${escapeHtml(item.name)}" required />
             <input type="text" class="edit-price" placeholder="Preço (opcional)" inputmode="decimal" value="${escapeHtml(priceValue)}" />
+            <input type="number" class="edit-quantity" placeholder="Qtd" min="1" value="${item.quantity || 1}" inputmode="numeric" />
           </div>
           <div class="row">
             <select class="edit-area">
@@ -296,6 +313,7 @@ function onSubmitAdd(e) {
   e.preventDefault();
   const name = document.getElementById('input-name').value.trim();
   const priceRaw = document.getElementById('input-price').value;
+  const quantity = parseInt(document.getElementById('input-quantity').value, 10) || 1;
   const areaId = document.getElementById('input-area').value;
   const categoryId = document.getElementById('input-category').value;
   const link = document.getElementById('input-link').value.trim();
@@ -303,7 +321,7 @@ function onSubmitAdd(e) {
 
   if (!name) return;
 
-  addItem({ name, price: parsePriceInput(priceRaw), link, note, areaId, categoryId });
+  addItem({ name, price: parsePriceInput(priceRaw), quantity, link, note, areaId, categoryId });
   e.target.reset();
   document.getElementById('input-name').focus();
 }
@@ -311,6 +329,7 @@ function onSubmitAdd(e) {
 function onSubmitEdit(form, id) {
   const name = form.querySelector('.edit-name').value.trim();
   const priceRaw = form.querySelector('.edit-price').value;
+  const quantity = parseInt(form.querySelector('.edit-quantity').value, 10) || 1;
   const areaId = form.querySelector('.edit-area').value;
   const categoryId = form.querySelector('.edit-category').value;
   const link = form.querySelector('.edit-link').value.trim();
@@ -318,7 +337,7 @@ function onSubmitEdit(form, id) {
 
   if (!name) return;
 
-  updateItem(id, { name, price: parsePriceInput(priceRaw), link, note, areaId, categoryId });
+  updateItem(id, { name, price: parsePriceInput(priceRaw), quantity, link, note, areaId, categoryId });
 }
 
 document.getElementById('app').addEventListener('click', (e) => {
@@ -338,7 +357,25 @@ document.getElementById('app').addEventListener('click', (e) => {
   } else if (action === 'cancel-edit') {
     state.editingId = null;
     render();
+  } else if (action === 'toggle-filter') {
+    const column = target.getAttribute('data-column');
+    state.openFilterMenu = state.openFilterMenu === column ? null : column;
+    render();
+  } else if (action === 'set-filter') {
+    const column = target.getAttribute('data-column');
+    const value = target.getAttribute('data-value');
+    if (column === 'area') state.filterArea = value;
+    if (column === 'category') state.filterCategory = value;
+    state.openFilterMenu = null;
+    render();
   }
+});
+
+document.addEventListener('mousedown', (e) => {
+  if (!state.openFilterMenu) return;
+  if (e.target.closest('.col-filter')) return;
+  state.openFilterMenu = null;
+  render();
 });
 
 document.getElementById('app').addEventListener('submit', (e) => {

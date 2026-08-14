@@ -6,6 +6,7 @@ const state = {
   error: null,
   filterArea: 'all',
   filterCategory: 'all',
+  filterPriority: 'all',
   editingId: null,
   editingPriorityId: null,
   search: '',
@@ -145,6 +146,7 @@ function filteredItems() {
   return state.items.filter((item) => {
     if (state.filterArea !== 'all' && item.area_id !== state.filterArea) return false;
     if (state.filterCategory !== 'all' && item.category_id !== state.filterCategory) return false;
+    if (state.filterPriority !== 'all' && item.priority !== state.filterPriority) return false;
     if (search && !normalizeText(item.name).includes(search)) return false;
     return true;
   });
@@ -162,7 +164,7 @@ function render() {
   const wasSearchFocused = activeElement && activeElement.id === 'search-input';
   const searchCursorPos = wasSearchFocused ? activeElement.selectionStart : null;
 
-  const hasActiveFilter = state.filterArea !== 'all' || state.filterCategory !== 'all' || state.search.trim() !== '';
+  const hasActiveFilter = state.filterArea !== 'all' || state.filterCategory !== 'all' || state.filterPriority !== 'all' || state.search.trim() !== '';
   const emptyMessage = hasActiveFilter
     ? 'Nenhum item encontrado com esse filtro/busca.'
     : 'Nada por aqui ainda.';
@@ -227,6 +229,12 @@ function render() {
           <option value="all">Todas as categorias</option>
           ${state.categories.map((c) => `<option value="${c.id}" ${state.filterCategory === c.id ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}
         </select>
+        <select id="filter-priority">
+          <option value="all">Todas prioridades</option>
+          <option value="alta" ${state.filterPriority === 'alta' ? 'selected' : ''}>🔴 Alta</option>
+          <option value="media" ${state.filterPriority === 'media' ? 'selected' : ''}>🟡 Média</option>
+          <option value="baixa" ${state.filterPriority === 'baixa' ? 'selected' : ''}>⚪ Baixa</option>
+        </select>
       </div>
     </div>
 
@@ -259,6 +267,10 @@ function render() {
   });
   document.getElementById('filter-category').addEventListener('change', (e) => {
     state.filterCategory = e.target.value;
+    render();
+  });
+  document.getElementById('filter-priority').addEventListener('change', (e) => {
+    state.filterPriority = e.target.value;
     render();
   });
 }

@@ -198,6 +198,10 @@ tr.purchased {
   opacity: 0.55;
 }
 
+.mobile-only {
+  display: none;
+}
+
 .col-check, .col-link, .col-del, .col-qty {
   width: 1%;
   white-space: nowrap;
@@ -263,7 +267,9 @@ tr.purchased {
 .tag-btn {
   border: none;
   cursor: pointer;
-  font-family: inherit;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .priority-picker {
@@ -487,8 +493,107 @@ tr.editing td {
   opacity: 0.85;
 }
 
-@media (max-width: 560px) {
+@media (max-width: 640px) {
   #app {
     padding: 12px 10px 40px;
+  }
+
+  .table-wrap {
+    overflow-x: visible;
+    background: none;
+    border: none;
+    border-radius: 0;
+  }
+
+  table {
+    display: block;
+    border-collapse: separate;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  tr.item-row {
+    display: flex;
+    align-items: flex-start;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+  }
+
+  tr.item-row td {
+    padding: 0;
+    border-bottom: none;
+  }
+
+  .desktop-only {
+    display: none;
+  }
+
+  .mobile-only {
+    display: block;
+  }
+
+  .td-check {
+    flex-shrink: 0;
+    width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .td-check .check {
+    width: 24px;
+    height: 24px;
+    border-width: 2.5px;
+  }
+
+  .td-name {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+  }
+
+  .td-del {
+    flex-shrink: 0;
+    margin-left: 8px;
+  }
+
+  .row-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+
+  .row-bottom {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+  }
+
+  .row-bottom .qty-text {
+    color: var(--text-soft);
+    font-weight: 600;
+    margin-right: 8px;
+  }
+
+  .row-bottom .price {
+    margin-right: 8px;
+  }
+
+  .row-bottom .link-icon {
+    margin-left: auto;
   }
 }

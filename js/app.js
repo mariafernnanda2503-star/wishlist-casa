@@ -222,15 +222,15 @@ function render() {
       <input type="text" id="search-input" class="search-input" placeholder="🔎 Buscar produto..." value="${escapeHtml(state.search)}" />
       <div class="filters">
         <select id="filter-area">
-          <option value="all">Todas as áreas</option>
+          <option value="all">Área</option>
           ${state.areas.map((a) => `<option value="${a.id}" ${state.filterArea === a.id ? 'selected' : ''}>${escapeHtml(a.name)}</option>`).join('')}
         </select>
         <select id="filter-category">
-          <option value="all">Todas as categorias</option>
+          <option value="all">Categoria</option>
           ${state.categories.map((c) => `<option value="${c.id}" ${state.filterCategory === c.id ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}
         </select>
         <select id="filter-priority">
-          <option value="all">Todas prioridades</option>
+          <option value="all">Prioridade</option>
           <option value="alta" ${state.filterPriority === 'alta' ? 'selected' : ''}>🔴 Alta</option>
           <option value="media" ${state.filterPriority === 'media' ? 'selected' : ''}>🟡 Média</option>
           <option value="baixa" ${state.filterPriority === 'baixa' ? 'selected' : ''}>⚪ Baixa</option>
@@ -324,26 +324,42 @@ function renderPriorityCell(item) {
 }
 
 function renderRow(item) {
+  const qtyText = item.quantity > 1 ? `×${item.quantity}` : '';
+  const linkHtml = item.link ? `<a class="link-icon" href="${escapeHtml(item.link)}" target="_blank" rel="noopener noreferrer" title="Ver produto">🔗</a>` : '';
+  const priorityHtml = renderPriorityCell(item);
+  const areaHtml = `<span class="tag tag-area">${escapeHtml(areaName(item.area_id))}</span>`;
+  const categoryHtml = `<span class="tag tag-category">${escapeHtml(categoryName(item.category_id))}</span>`;
+
   return `
-    <tr class="${item.status === 'purchased' ? 'purchased' : ''}">
-      <td class="col-check">
+    <tr class="item-row ${item.status === 'purchased' ? 'purchased' : ''}">
+      <td class="col-check td-check">
         <button class="check" data-action="toggle" data-id="${item.id}" title="Marcar como ${item.status === 'pending' ? 'comprado' : 'pendente'}">
           ${item.status === 'purchased' ? '✓' : ''}
         </button>
       </td>
-      <td>
+      <td class="td-name">
         <button class="name-btn" data-action="edit" data-id="${item.id}" title="Editar item">
           <div class="name">${escapeHtml(item.name)}</div>
           ${item.note ? `<div class="note">${escapeHtml(item.note)}</div>` : ''}
         </button>
+        <div class="mobile-only row-tags">
+          ${priorityHtml}
+          ${areaHtml}
+          ${categoryHtml}
+        </div>
+        <div class="mobile-only row-bottom">
+          ${qtyText ? `<span class="qty-text">${qtyText}</span>` : ''}
+          <span class="price">${formatPrice(item.price)}</span>
+          ${linkHtml}
+        </div>
       </td>
-      <td class="col-priority">${renderPriorityCell(item)}</td>
-      <td><span class="tag tag-area">${escapeHtml(areaName(item.area_id))}</span></td>
-      <td><span class="tag tag-category">${escapeHtml(categoryName(item.category_id))}</span></td>
-      <td class="col-qty">${item.quantity > 1 ? `×${item.quantity}` : ''}</td>
-      <td class="col-price price">${formatPrice(item.price)}</td>
-      <td class="col-link">${item.link ? `<a class="link-icon" href="${escapeHtml(item.link)}" target="_blank" rel="noopener noreferrer" title="Ver produto">🔗</a>` : ''}</td>
-      <td class="col-del"><button class="del" data-action="delete" data-id="${item.id}" title="Remover">×</button></td>
+      <td class="col-priority td-priority desktop-only">${priorityHtml}</td>
+      <td class="td-area desktop-only">${areaHtml}</td>
+      <td class="td-category desktop-only">${categoryHtml}</td>
+      <td class="col-qty td-qty desktop-only">${qtyText}</td>
+      <td class="col-price price td-price desktop-only">${formatPrice(item.price)}</td>
+      <td class="col-link td-link desktop-only">${linkHtml}</td>
+      <td class="col-del td-del"><button class="del" data-action="delete" data-id="${item.id}" title="Remover">×</button></td>
     </tr>
   `;
 }

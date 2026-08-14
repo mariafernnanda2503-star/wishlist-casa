@@ -22,6 +22,9 @@ function parsePriceInput(raw) {
   return isNaN(value) ? null : value;
 }
 
+const PRIORITY_ORDER = { alta: 0, media: 1, baixa: 2 };
+const PRIORITY_LABEL = { alta: '🔴 Alta', media: '🟡 Média', baixa: '⚪ Baixa' };
+
 function escapeHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -58,11 +61,12 @@ async function loadAll() {
   render();
 }
 
-async function addItem({ name, price, quantity, link, note, areaId, categoryId }) {
+async function addItem({ name, price, quantity, priority, link, note, areaId, categoryId }) {
   const { error } = await supabaseClient.from('items').insert({
     name,
     price,
     quantity,
+    priority,
     link: link || null,
     note: note || null,
     area_id: areaId || null,
@@ -74,13 +78,14 @@ async function addItem({ name, price, quantity, link, note, areaId, categoryId }
   }
 }
 
-async function updateItem(id, { name, price, quantity, link, note, areaId, categoryId }) {
+async function updateItem(id, { name, price, quantity, priority, link, note, areaId, categoryId }) {
   const { error } = await supabaseClient
     .from('items')
     .update({
       name,
       price,
       quantity,
+      priority,
       link: link || null,
       note: note || null,
       area_id: areaId || null,
@@ -135,7 +140,9 @@ function render() {
   }
 
   const items = filteredItems();
-  const pending = items.filter((i) => i.status === 'pending');
+  const pending = items
+    .filter((i) => i.status === 'pending')
+    .sort((a, b) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]);
   const purchased = items.filter((i) => i.status === 'purchased');
 
   const errorBanner = state.error
@@ -170,6 +177,11 @@ function render() {
             ${categoryOptions}
           </select>
         </div>
+        <select id="input-priority">
+          <option value="alta">🔴 Alta prioridade</option>
+          <option value="media" selected>🟡 Média prioridade</option>
+          <option value="baixa">⚪ Baixa prioridade</option>
+        </select>
         <input type="url" id="input-link" placeholder="Link (opcional)" />
         <input type="text" id="input-note" placeholder="Nota (opcional)" />
         <button type="submit">Adicionar</button>
@@ -233,6 +245,7 @@ function renderTable(items) {
           <tr>
             <th class="col-check"></th>
             <th>Produto</th>
+            <th class="col-priority">Prioridade</th>
             ${renderFilterHeader('area', 'Área', state.areas, state.filterArea)}
             ${renderFilterHeader('category', 'Categoria', state.categories, state.filterCategory)}
             <th class="col-qty">Qtd</th>
@@ -263,6 +276,7 @@ function renderRow(item) {
           ${item.note ? `<div class="note">${escapeHtml(item.note)}</div>` : ''}
         </button>
       </td>
+      <td class="col-priority"><span class="tag tag-priority-${item.priority}">${PRIORITY_LABEL[item.priority] || PRIORITY_LABEL.media}</span></td>
       <td><span class="tag tag-area">${escapeHtml(areaName(item.area_id))}</span></td>
       <td><span class="tag tag-category">${escapeHtml(categoryName(item.category_id))}</span></td>
       <td class="col-qty">${item.quantity > 1 ? `×${item.quantity}` : ''}</td>
@@ -280,7 +294,7 @@ function renderEditRow(item) {
 
   return `
     <tr class="editing">
-      <td colspan="8">
+      <td colspan="9">
         <form class="edit-form" data-action="save-edit" data-id="${item.id}">
           <div class="row">
             <input type="text" class="edit-name" placeholder="Nome do produto" value="${escapeHtml(item.name)}" required />
@@ -297,6 +311,11 @@ function renderEditRow(item) {
               ${categoryOptions}
             </select>
           </div>
+          <select class="edit-priority">
+            <option value="alta" ${item.priority === 'alta' ? 'selected' : ''}>🔴 Alta prioridade</option>
+            <option value="media" ${item.priority === 'media' ? 'selected' : ''}>🟡 Média prioridade</option>
+            <option value="baixa" ${item.priority === 'baixa' ? 'selected' : ''}>⚪ Baixa prioridade</option>
+          </select>
           <input type="url" class="edit-link" placeholder="Link (opcional)" value="${escapeHtml(item.link || '')}" />
           <input type="text" class="edit-note" placeholder="Nota (opcional)" value="${escapeHtml(item.note || '')}" />
           <div class="row edit-actions">
@@ -314,6 +333,7 @@ function onSubmitAdd(e) {
   const name = document.getElementById('input-name').value.trim();
   const priceRaw = document.getElementById('input-price').value;
   const quantity = parseInt(document.getElementById('input-quantity').value, 10) || 1;
+  const priority = document.getElementById('input-priority').value;
   const areaId = document.getElementById('input-area').value;
   const categoryId = document.getElementById('input-category').value;
   const link = document.getElementById('input-link').value.trim();
@@ -321,7 +341,7 @@ function onSubmitAdd(e) {
 
   if (!name) return;
 
-  addItem({ name, price: parsePriceInput(priceRaw), quantity, link, note, areaId, categoryId });
+  addItem({ name, price: parsePriceInput(priceRaw), quantity, priority, link, note, areaId, categoryId });
   e.target.reset();
   document.getElementById('input-name').focus();
 }
@@ -330,6 +350,7 @@ function onSubmitEdit(form, id) {
   const name = form.querySelector('.edit-name').value.trim();
   const priceRaw = form.querySelector('.edit-price').value;
   const quantity = parseInt(form.querySelector('.edit-quantity').value, 10) || 1;
+  const priority = form.querySelector('.edit-priority').value;
   const areaId = form.querySelector('.edit-area').value;
   const categoryId = form.querySelector('.edit-category').value;
   const link = form.querySelector('.edit-link').value.trim();
@@ -337,7 +358,7 @@ function onSubmitEdit(form, id) {
 
   if (!name) return;
 
-  updateItem(id, { name, price: parsePriceInput(priceRaw), quantity, link, note, areaId, categoryId });
+  updateItem(id, { name, price: parsePriceInput(priceRaw), quantity, priority, link, note, areaId, categoryId });
 }
 
 document.getElementById('app').addEventListener('click', (e) => {

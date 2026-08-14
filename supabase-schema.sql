@@ -19,6 +19,7 @@ create table items (
   name text not null,
   price numeric(10, 2),
   quantity int not null default 1,
+  priority text not null default 'media' check (priority in ('alta', 'media', 'baixa')),
   link text,
   note text,
   status text not null default 'pending' check (status in ('pending', 'purchased')),

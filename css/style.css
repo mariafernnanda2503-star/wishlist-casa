@@ -10,6 +10,12 @@
   --category-soft: #EFEAF5;
   --category-text: #6B4F94;
   --danger: #B23A3A;
+  --priority-alta-soft: #FBEAEA;
+  --priority-alta-text: #B23A3A;
+  --priority-media-soft: #FBF3DE;
+  --priority-media-text: #8A6A1E;
+  --priority-baixa-soft: #EEEBE4;
+  --priority-baixa-text: #757066;
 }
 
 * {
@@ -353,6 +359,25 @@ tr.purchased .name {
 .tag-category {
   background: var(--category-soft);
   color: var(--category-text);
+}
+
+.col-priority {
+  white-space: nowrap;
+}
+
+.tag-priority-alta {
+  background: var(--priority-alta-soft);
+  color: var(--priority-alta-text);
+}
+
+.tag-priority-media {
+  background: var(--priority-media-soft);
+  color: var(--priority-media-text);
+}
+
+.tag-priority-baixa {
+  background: var(--priority-baixa-soft);
+  color: var(--priority-baixa-text);
 }
 
 .price {

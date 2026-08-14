@@ -1,0 +1,55 @@
+# Config do Supabase local (Docker). Referência:
+# https://supabase.com/docs/guides/local-development/cli/config
+
+project_id = "wishlist-casa"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 17
+
+[db.migrations]
+enabled = true
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[realtime]
+enabled = true
+
+[studio]
+enabled = true
+port = 54323
+api_url = "http://127.0.0.1"
+
+# Caixa de e-mail local: o que o auth enviar em dev cai aqui.
+[local_smtp]
+enabled = true
+port = 54324
+
+[storage]
+enabled = false
+
+[auth]
+enabled = true
+site_url = "http://localhost:3001"
+additional_redirect_urls = ["http://localhost:3001"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+# Contas são criadas à mão no painel do Supabase.
+enable_signup = false
+
+[auth.email]
+# `enable_signup` aqui mapeia para GOTRUE_EXTERNAL_EMAIL_ENABLED e desligaria o
+# login por e-mail inteiro. Quem bloqueia cadastro novo é o [auth] acima.
+enable_signup = true
+enable_confirmations = false
+double_confirm_changes = true

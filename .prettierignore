@@ -1,0 +1,8 @@
+node_modules/
+.next/
+out/
+pnpm-lock.yaml
+supabase/.branches/
+supabase/.temp/
+supabase/.env
+src/shared/types/database.ts

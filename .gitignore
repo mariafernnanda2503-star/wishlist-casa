@@ -1,2 +1,37 @@
+# Dependencies
+node_modules/
+
+# Next.js build and cache output
+.next/
+out/
+build/
+dist/
+.vercel/
+.netlify/
+*.tsbuildinfo
+
+# Supabase local artifacts
+supabase/.branches/
+supabase/.temp/
+supabase/.env
+supabase/.env.*
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS files
 .DS_Store
 Thumbs.db
+Desktop.ini
+
+# Editor files
+.idea/
+.vscode/
+*.swp

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 
+import { feedback } from "@/shared/lib/feedback";
+import { logger } from "@/shared/lib/logger";
 import { createClient } from "@/shared/lib/supabase/client";
 import { Button, Field } from "@/ui/primitives";
 
@@ -16,14 +18,20 @@ export function RequestResetForm() {
     setSubmitting(true);
 
     const supabase = createClient();
-    await supabase.auth.resetPasswordForEmail(email, {
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/callback`,
     });
+
+    if (resetError) logger.error("auth.password_reset_request_failed", resetError);
 
     // Confirmação igual em qualquer caso: dizer "esse e-mail não existe"
     // entregaria a quem está tentando adivinhar quais contas existem.
     setSent(true);
     setSubmitting(false);
+    feedback.success("Confira seu e-mail para continuar.", {
+      event: "auth.password_reset_request_completed",
+      context: { providerAccepted: !resetError },
+    });
   }
 
   if (sent) {

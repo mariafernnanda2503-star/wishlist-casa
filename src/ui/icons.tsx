@@ -79,8 +79,26 @@ export function ChevronDownIcon(props: IconProps) {
 export function SortIcon(props: IconProps) {
   return (
     <Icon {...props}>
-      <path className="sort-up" d="m7 10 5-5 5 5" />
-      <path className="sort-down" d="m7 14 5 5 5-5" />
+      <path className="sort-up" d="M8 18V6M5 9l3-3 3 3" />
+      <path className="sort-down" d="M16 6v12M13 15l3 3 3-3" />
+    </Icon>
+  );
+}
+
+export function InfoIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 11v5M12 8h.01" />
+    </Icon>
+  );
+}
+
+export function AlertIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M10.3 3.7 2.4 17.4A2 2 0 0 0 4.1 20h15.8a2 2 0 0 0 1.7-2.6L13.7 3.7a2 2 0 0 0-3.4 0Z" />
+      <path d="M12 9v4M12 17h.01" />
     </Icon>
   );
 }

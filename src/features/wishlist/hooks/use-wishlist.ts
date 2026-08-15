@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { feedback } from "@/shared/lib/feedback";
+import { logger } from "@/shared/lib/logger";
 import { createClient } from "@/shared/lib/supabase/client";
 
 import {
@@ -33,8 +35,6 @@ export function useWishlist(initialData: WishlistData) {
   const [items, setItems] = useState<Item[]>(initialData.items);
   const [areas, setAreas] = useState<Area[]>(initialData.areas);
   const [categories, setCategories] = useState<Category[]>(initialData.categories);
-  const [error, setError] = useState<string | null>(null);
-
   const reload = useCallback(async () => {
     const [areasRes, categoriesRes, itemsRes] = await Promise.all([
       supabase.from("areas").select("*").order("sort_order"),
@@ -43,14 +43,18 @@ export function useWishlist(initialData: WishlistData) {
     ]);
 
     if (areasRes.error || categoriesRes.error || itemsRes.error) {
-      setError("Não consegui atualizar os dados. Recarregue a página.");
-      return;
+      feedback.error("Não consegui atualizar os dados. Recarregue a página.", {
+        event: "wishlist.reload_failed",
+        error: areasRes.error ?? categoriesRes.error ?? itemsRes.error,
+      });
+      return false;
     }
 
     setAreas(areasRes.data);
     setCategories(categoriesRes.data);
     setItems(itemsRes.data as Item[]);
-    setError(null);
+    logger.info("wishlist.reload_succeeded", { itemCount: itemsRes.data.length });
+    return true;
   }, [supabase]);
 
   // Mantém a lista em sincronia entre dispositivos sem refresh.
@@ -60,7 +64,12 @@ export function useWishlist(initialData: WishlistData) {
       .on("postgres_changes", { event: "*", schema: "public", table: "items" }, () => {
         void reload();
       })
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") logger.info("wishlist.realtime_connected");
+        else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          logger.warn("wishlist.realtime_connection_unstable", { status });
+        }
+      });
 
     return () => {
       void supabase.removeChannel(channel);
@@ -71,10 +80,15 @@ export function useWishlist(initialData: WishlistData) {
     async (draft: ItemDraft) => {
       const { error: insertError } = await supabase.from("items").insert(toRow(draft));
       if (insertError) {
-        setError("Não consegui adicionar o item.");
+        feedback.error("Não consegui adicionar o item.", {
+          event: "wishlist.item_add_failed",
+          error: insertError,
+        });
         return false;
       }
-      await reload();
+      if (await reload()) {
+        feedback.success("Item adicionado.", { event: "wishlist.item_add_succeeded" });
+      }
       return true;
     },
     [supabase, reload],
@@ -84,10 +98,19 @@ export function useWishlist(initialData: WishlistData) {
     async (id: string, draft: ItemDraft) => {
       const { error: updateError } = await supabase.from("items").update(toRow(draft)).eq("id", id);
       if (updateError) {
-        setError("Não consegui salvar as alterações.");
+        feedback.error("Não consegui salvar as alterações.", {
+          event: "wishlist.item_update_failed",
+          error: updateError,
+          context: { itemId: id },
+        });
         return false;
       }
-      await reload();
+      if (await reload()) {
+        feedback.success("Alterações salvas.", {
+          event: "wishlist.item_update_succeeded",
+          context: { itemId: id },
+        });
+      }
       return true;
     },
     [supabase, reload],
@@ -103,8 +126,24 @@ export function useWishlist(initialData: WishlistData) {
           purchased_at: nextStatus === "purchased" ? new Date().toISOString() : null,
         })
         .eq("id", item.id);
-      if (toggleError) setError("Não consegui atualizar o item.");
-      else await reload();
+      if (toggleError) {
+        feedback.error("Não consegui atualizar o item.", {
+          event: "wishlist.item_status_failed",
+          error: toggleError,
+          context: { itemId: item.id },
+        });
+        return;
+      }
+
+      if (await reload()) {
+        feedback.success(
+          nextStatus === "purchased" ? "Item marcado como comprado." : "Item reaberto.",
+          {
+            event: "wishlist.item_status_succeeded",
+            context: { itemId: item.id, status: nextStatus },
+          },
+        );
+      }
     },
     [supabase, reload],
   );
@@ -115,8 +154,21 @@ export function useWishlist(initialData: WishlistData) {
         .from("items")
         .update({ priority })
         .eq("id", id);
-      if (priorityError) setError("Não consegui atualizar a prioridade.");
-      else await reload();
+      if (priorityError) {
+        feedback.error("Não consegui atualizar a prioridade.", {
+          event: "wishlist.item_priority_failed",
+          error: priorityError,
+          context: { itemId: id },
+        });
+        return;
+      }
+
+      if (await reload()) {
+        feedback.success("Prioridade atualizada.", {
+          event: "wishlist.item_priority_succeeded",
+          context: { itemId: id, priority },
+        });
+      }
     },
     [supabase, reload],
   );
@@ -124,8 +176,21 @@ export function useWishlist(initialData: WishlistData) {
   const deleteItem = useCallback(
     async (id: string) => {
       const { error: deleteError } = await supabase.from("items").delete().eq("id", id);
-      if (deleteError) setError("Não consegui remover o item.");
-      else await reload();
+      if (deleteError) {
+        feedback.error("Não consegui remover o item.", {
+          event: "wishlist.item_delete_failed",
+          error: deleteError,
+          context: { itemId: id },
+        });
+        return;
+      }
+
+      if (await reload()) {
+        feedback.success("Item removido.", {
+          event: "wishlist.item_delete_succeeded",
+          context: { itemId: id },
+        });
+      }
     },
     [supabase, reload],
   );
@@ -134,7 +199,6 @@ export function useWishlist(initialData: WishlistData) {
     items,
     areas,
     categories,
-    error,
     addItem,
     updateItem,
     toggleStatus,

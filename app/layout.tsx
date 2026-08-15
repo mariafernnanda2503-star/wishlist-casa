@@ -1,6 +1,8 @@
 import { type Metadata, type Viewport } from "next";
 import { Google_Sans } from "next/font/google";
 
+import { Toaster } from "@/ui/primitives";
+
 import "./globals.css";
 
 // Auto-hospedada no build: nenhuma requisição a servidor de fonte em runtime e
@@ -25,7 +27,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" className={googleSans.variable}>
-      <body className="scrollbar-themed font-sans antialiased">{children}</body>
+      <body className="scrollbar-themed font-sans antialiased">
+        {children}
+        <Toaster />
+      </body>
     </html>
   );
 }

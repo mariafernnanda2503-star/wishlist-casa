@@ -50,7 +50,7 @@ export function ItemRow({
     <tr
       className={cn(
         purchased && "opacity-55",
-        "hover:bg-surface-alt/60 max-sm:bg-surface max-sm:shadow-control max-sm:hover:bg-surface cursor-pointer transition-colors duration-100 max-sm:flex max-sm:items-start max-sm:rounded-[8px] max-sm:p-3",
+        "hover:bg-surface-alt/60 max-sm:bg-surface max-sm:shadow-control max-sm:hover:bg-surface cursor-pointer transition-colors duration-100 max-sm:flex max-sm:items-start max-sm:rounded-[8px] max-sm:p-3 sm:h-[52px]",
       )}
       onClick={handleRowClick}
     >

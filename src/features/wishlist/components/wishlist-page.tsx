@@ -28,7 +28,6 @@ export function WishlistPage({ initialData }: WishlistPageProps) {
     items,
     areas,
     categories,
-    error,
     addItem,
     updateItem,
     toggleStatus,
@@ -113,12 +112,6 @@ export function WishlistPage({ initialData }: WishlistPageProps) {
         </nav>
         <SignOutButton />
       </header>
-
-      {error ? (
-        <div className="border-danger-line bg-danger-soft text-danger mb-3 rounded-lg border px-3 py-2.5 text-[13px]">
-          {error}
-        </div>
-      ) : null}
 
       <FiltersBar areas={areas} categories={categories} filters={filters} onChange={setFilters} />
 

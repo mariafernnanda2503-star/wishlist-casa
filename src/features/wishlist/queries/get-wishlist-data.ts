@@ -1,3 +1,4 @@
+import { logger } from "@/shared/lib/logger";
 import { createClient } from "@/shared/lib/supabase/server";
 
 import { type WishlistData } from "../types";
@@ -12,7 +13,15 @@ export async function getWishlistData(): Promise<WishlistData | null> {
     supabase.from("items").select("*").order("status").order("created_at", { ascending: false }),
   ]);
 
-  if (areasRes.error || categoriesRes.error || itemsRes.error) return null;
+  if (areasRes.error || categoriesRes.error || itemsRes.error) {
+    logger.error(
+      "wishlist.initial_load_failed",
+      areasRes.error ?? categoriesRes.error ?? itemsRes.error,
+    );
+    return null;
+  }
+
+  logger.info("wishlist.initial_load_succeeded", { itemCount: itemsRes.data.length });
 
   return {
     areas: areasRes.data,

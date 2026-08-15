@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { feedback } from "@/shared/lib/feedback";
 import { createClient } from "@/shared/lib/supabase/client";
 import { LogOutIcon } from "@/ui/icons";
 import { Button } from "@/ui/primitives";
@@ -14,7 +15,18 @@ export function SignOutButton() {
   async function onSignOut() {
     setSigningOut(true);
     const supabase = createClient();
-    await supabase.auth.signOut();
+    const { error: signOutError } = await supabase.auth.signOut();
+
+    if (signOutError) {
+      feedback.error("Não consegui encerrar a sessão.", {
+        event: "auth.sign_out_failed",
+        error: signOutError,
+      });
+      setSigningOut(false);
+      return;
+    }
+
+    feedback.success("Sessão encerrada.", { event: "auth.sign_out_succeeded" });
     router.replace("/login");
     router.refresh();
   }

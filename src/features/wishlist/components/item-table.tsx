@@ -13,7 +13,7 @@ import { ItemRow } from "./item-row";
 const HEAD_CELL =
   "bg-surface-alt shadow-table-header p-0 text-left text-[11px] font-semibold tracking-[0.06em] whitespace-nowrap text-ink-soft uppercase transition-colors duration-100";
 
-type SortKey = "name" | "priority" | "area" | "category" | "quantity" | "price" | "link";
+type SortKey = "name" | "priority" | "area" | "category" | "quantity" | "price";
 type SortState = { key: SortKey; direction: "asc" | "desc" };
 
 const COLLATOR = new Intl.Collator("pt-BR", { sensitivity: "base", numeric: true });
@@ -34,7 +34,7 @@ function SortableHead({ label, sortKey, sort, onSort }: SortableHeadProps) {
       className={cn(
         HEAD_CELL,
         "hover:bg-surface last:[&_button]:pr-3.5",
-        active && "bg-accent-soft text-accent hover:bg-accent-soft",
+        active && "text-accent shadow-table-header-active hover:bg-surface-alt",
       )}
       aria-sort={direction === "asc" ? "ascending" : direction === "desc" ? "descending" : "none"}
     >
@@ -43,14 +43,14 @@ function SortableHead({ label, sortKey, sort, onSort }: SortableHeadProps) {
         title={`Ordenar por ${label.toLowerCase()}`}
         onClick={() => onSort(sortKey)}
         className={cn(
-          "group hover:text-ink focus-visible:text-accent focus-visible:shadow-control-focus active:shadow-control-active flex w-full cursor-pointer items-center gap-1.5 px-3 pt-2.5 pb-3 transition-[color,box-shadow,padding] duration-100 focus-visible:outline-none active:pt-3 active:pb-2.5",
+          "group hover:text-ink focus-visible:text-accent focus-visible:shadow-control-focus flex w-full cursor-pointer items-center gap-1.5 px-3 pt-2.5 pb-3 transition-colors duration-100 focus-visible:outline-none",
           active && "text-accent hover:text-accent",
         )}
       >
         {label}
         <SortIcon
           className={cn(
-            "group-hover:text-accent size-3.5 transition-[color,opacity,transform] duration-100 group-hover:scale-110 group-active:translate-y-px",
+            "group-hover:text-accent size-3.5 transition-[color,opacity] duration-100",
             !active && "opacity-45 group-hover:opacity-100",
             direction === "asc" && "[&_.sort-down]:opacity-25",
             direction === "desc" && "[&_.sort-up]:opacity-25",
@@ -105,8 +105,6 @@ export function ItemTable({
           return item.quantity;
         case "price":
           return item.price;
-        case "link":
-          return item.link;
       }
     }
 
@@ -153,7 +151,7 @@ export function ItemTable({
             <SortableHead label="Categoria" sortKey="category" sort={sort} onSort={handleSort} />
             <SortableHead label="Qtd" sortKey="quantity" sort={sort} onSort={handleSort} />
             <SortableHead label="Preço" sortKey="price" sort={sort} onSort={handleSort} />
-            <SortableHead label="Link" sortKey="link" sort={sort} onSort={handleSort} />
+            <th className={cn(HEAD_CELL, "px-3 pt-2.5 pb-3 last:pr-3.5")}>Link</th>
           </tr>
         </thead>
         <tbody className="max-sm:flex max-sm:flex-col max-sm:gap-2.5 [&>tr:last-child>td]:border-b-0 sm:[&>tr:last-child>td]:pb-3">

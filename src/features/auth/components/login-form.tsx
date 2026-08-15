@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
+import { feedback } from "@/shared/lib/feedback";
 import { createClient } from "@/shared/lib/supabase/client";
 import { Button, Checkbox, Field, PasswordField } from "@/ui/primitives";
 
@@ -11,7 +12,6 @@ const REMEMBERED_EMAIL_KEY = "wishlist:email-lembrado";
 
 export function LoginForm() {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
   const rememberRef = useRef<HTMLInputElement>(null);
@@ -35,7 +35,6 @@ export function LoginForm() {
     const remember = form.get("remember") === "on";
 
     setSubmitting(true);
-    setError(null);
 
     const supabase = createClient();
     const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
@@ -43,7 +42,10 @@ export function LoginForm() {
     if (signInError) {
       // A mensagem do Supabase é genérica de propósito (não revela se o e-mail
       // existe). Traduzimos mantendo essa característica.
-      setError("E-mail ou senha inválidos.");
+      feedback.error("E-mail ou senha inválidos.", {
+        event: "auth.sign_in_failed",
+        error: signInError,
+      });
       setSubmitting(false);
       return;
     }
@@ -52,18 +54,13 @@ export function LoginForm() {
     if (remember) window.localStorage.setItem(REMEMBERED_EMAIL_KEY, email);
     else window.localStorage.removeItem(REMEMBERED_EMAIL_KEY);
 
+    feedback.success("Bem-vindo de volta.", { event: "auth.sign_in_succeeded" });
     router.replace("/");
     router.refresh();
   }
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
-      {error ? (
-        <p className="border-danger-line bg-danger-soft text-danger rounded-lg border px-3 py-2.5 text-[13px]">
-          {error}
-        </p>
-      ) : null}
-
       <Field
         ref={emailRef}
         label="E-mail"

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
+import { feedback } from "@/shared/lib/feedback";
 import { createClient } from "@/shared/lib/supabase/client";
 import { Button, PasswordField } from "@/ui/primitives";
 
@@ -34,11 +35,15 @@ export function NewPasswordForm() {
     const { error: updateError } = await supabase.auth.updateUser({ password });
 
     if (updateError) {
-      setError("Não consegui salvar a nova senha. Peça um link novo e tente de novo.");
+      feedback.error("Não consegui salvar a nova senha. Peça um link novo e tente de novo.", {
+        event: "auth.password_update_failed",
+        error: updateError,
+      });
       setSubmitting(false);
       return;
     }
 
+    feedback.success("Senha atualizada.", { event: "auth.password_update_succeeded" });
     router.replace("/");
     router.refresh();
   }

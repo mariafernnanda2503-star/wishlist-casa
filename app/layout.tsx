@@ -1,14 +1,14 @@
 import { type Metadata, type Viewport } from "next";
-import { Gabarito } from "next/font/google";
+import { Google_Sans } from "next/font/google";
 
 import "./globals.css";
 
 // Auto-hospedada no build: nenhuma requisição a servidor de fonte em runtime e
-// nenhum salto de layout ao carregar. Expõe --font-gabarito, que globals.css
+// nenhum salto de layout ao carregar. Expõe --font-google-sans, que globals.css
 // usa como primeira opção de --font-sans.
-const gabarito = Gabarito({
+const googleSans = Google_Sans({
   subsets: ["latin"],
-  variable: "--font-gabarito",
+  variable: "--font-google-sans",
   display: "swap",
 });
 
@@ -24,8 +24,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={gabarito.variable}>
-      <body className="font-sans antialiased">{children}</body>
+    <html lang="pt-BR" className={googleSans.variable}>
+      <body className="scrollbar-themed font-sans antialiased">{children}</body>
     </html>
   );
 }

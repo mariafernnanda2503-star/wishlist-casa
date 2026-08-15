@@ -8,7 +8,7 @@ import { cn } from "@/shared/lib/cn";
 export const fieldClassName = cn(
   // caret-accent: o cursor piscando também segue o acento, em vez do preto
   // padrão do navegador que destoa da base sépia.
-  "w-full rounded-lg bg-surface px-3 py-2.5 text-[15px] text-ink caret-accent placeholder:text-ink-soft",
+  "w-full rounded-lg bg-surface px-3.5 py-2.5 text-[15px] text-ink caret-accent placeholder:text-ink-soft",
   "shadow-control transition-[box-shadow] duration-100",
   "hover:shadow-control-hover",
   "focus:shadow-control-focus focus:outline-none",

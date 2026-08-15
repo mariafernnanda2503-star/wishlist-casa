@@ -26,5 +26,5 @@ export default async function Home() {
     );
   }
 
-  return <WishlistPage userEmail={user.email ?? ""} initialData={data} />;
+  return <WishlistPage initialData={data} />;
 }

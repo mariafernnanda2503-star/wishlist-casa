@@ -27,7 +27,7 @@ type ItemFormProps = {
   /** Só o formulário de edição passa isto — é o que faz o botão Cancelar aparecer. */
   onCancel?: () => void;
   onSubmit: (draft: ItemDraft) => void | Promise<void>;
-  resetAfterSubmit?: boolean;
+  focusNameOnMount?: boolean;
 };
 
 export function ItemForm({
@@ -37,7 +37,7 @@ export function ItemForm({
   submitLabel,
   onCancel,
   onSubmit,
-  resetAfterSubmit = false,
+  focusNameOnMount = false,
 }: ItemFormProps) {
   const [values, setValues] = useState<ItemFormValues>(initialValues);
   const [error, setError] = useState<string | null>(null);
@@ -79,11 +79,6 @@ export function ItemForm({
 
     setError(null);
     await onSubmit(parsed.data);
-
-    if (resetAfterSubmit) {
-      setValues(EMPTY_ITEM_FORM);
-      nameRef.current?.focus();
-    }
   }
 
   return (
@@ -92,6 +87,7 @@ export function ItemForm({
 
       <Input
         ref={nameRef}
+        autoFocus={focusNameOnMount}
         type="text"
         placeholder="Nome do produto"
         value={values.name}

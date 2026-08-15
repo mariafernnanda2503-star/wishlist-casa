@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 
+import { useFloatingMenu } from "@/shared/hooks/use-floating-menu";
 import { cn } from "@/shared/lib/cn";
 import { ChevronDownIcon } from "@/ui/icons";
 
@@ -47,6 +48,11 @@ export function Select({
   const [activeIndex, setActiveIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const listId = useId();
+  const floatingStyle = useFloatingMenu({
+    open,
+    anchorRef: containerRef,
+    matchAnchorWidth: true,
+  });
 
   const selected = options.find((option) => option.value === value);
   const showingPlaceholder = value === emptyValue || !selected;
@@ -138,7 +144,7 @@ export function Select({
         onKeyDown={onKeyDown}
         className={cn(
           fieldClassName,
-          "flex cursor-pointer items-center gap-2 pr-3 text-left",
+          "flex cursor-pointer items-center gap-2.5 pr-3.5 text-left",
           className,
         )}
       >
@@ -158,7 +164,8 @@ export function Select({
           id={listId}
           role="listbox"
           aria-label={ariaLabel}
-          className="popover absolute top-full right-0 left-0 z-20 mt-1.5"
+          style={floatingStyle}
+          className="popover scrollbar-themed fixed z-50 overflow-y-auto overscroll-contain"
         >
           {options.map((option, index) => (
             <button

@@ -21,7 +21,7 @@ type FiltersBarProps = {
   onChange: (filters: Filters) => void;
 };
 
-const FILTER_TRIGGER = "py-2 pl-2.5 text-[13.5px]";
+const FILTER_TRIGGER = "bg-surface-alt py-2 text-[13.5px]";
 
 /** Primeira entrada limpa o filtro; o rótulo do gatilho fica fora da lista. */
 const RESET: SelectOption = { value: ALL, label: "Todas" };

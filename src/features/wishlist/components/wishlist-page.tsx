@@ -8,18 +8,20 @@ import { useWishlist } from "../hooks";
 import { ALL, normalizeText, PRIORITY_ORDER } from "../lib";
 import { type Item, type ItemDraft, type Priority, type WishlistData } from "../types";
 
-import { AddItemPanel } from "./add-item-panel";
+import { AddItemPanel, type ViewMode } from "./add-item-panel";
+import { EditItemDialog } from "./edit-item-dialog";
 import { FiltersBar, type Filters } from "./filters-bar";
+import { ItemGrid } from "./item-grid";
 import { ItemTable } from "./item-table";
+import { Tag } from "./tag";
 
 const NO_FILTERS: Filters = { search: "", areaId: ALL, categoryId: ALL, priority: ALL };
 
 type WishlistPageProps = {
-  userEmail: string;
   initialData: WishlistData;
 };
 
-export function WishlistPage({ userEmail, initialData }: WishlistPageProps) {
+export function WishlistPage({ initialData }: WishlistPageProps) {
   const {
     items,
     areas,
@@ -34,6 +36,7 @@ export function WishlistPage({ userEmail, initialData }: WishlistPageProps) {
 
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>("table");
 
   const visibleItems = useMemo(() => {
     const search = normalizeText(filters.search.trim());
@@ -57,6 +60,7 @@ export function WishlistPage({ userEmail, initialData }: WishlistPageProps) {
     () => visibleItems.filter((item) => item.status === "purchased"),
     [visibleItems],
   );
+  const editingItem = items.find((item) => item.id === editingId) ?? null;
 
   const hasActiveFilter =
     filters.areaId !== ALL ||
@@ -80,9 +84,7 @@ export function WishlistPage({ userEmail, initialData }: WishlistPageProps) {
     areas,
     categories,
     emptyMessage,
-    editingId,
     onEdit: setEditingId,
-    onSave: handleSave,
     onToggleStatus: (item: Item) => void toggleStatus(item),
     onChangePriority: (id: string, priority: Priority) => void updatePriority(id, priority),
     onDelete: handleDelete,
@@ -90,12 +92,19 @@ export function WishlistPage({ userEmail, initialData }: WishlistPageProps) {
 
   return (
     <main className="mx-auto max-w-[920px] px-4 pt-4 pb-12 max-sm:px-2.5 max-sm:pt-3 max-sm:pb-10">
-      <header className="flex items-center justify-between gap-3 pt-2 pb-4">
-        <h1 className="text-[22px] font-semibold">🏠 Wishlist da Casa</h1>
-        <div className="flex items-center gap-3">
-          <span className="text-ink-soft text-[13px] max-sm:hidden">{userEmail}</span>
-          <SignOutButton />
-        </div>
+      <header className="bg-surface shadow-control mb-4 flex items-center justify-between gap-3 rounded-[10px] px-4 py-3">
+        <nav aria-label="Navegação estrutural" className="min-w-0">
+          <ol className="flex items-center gap-2 text-sm">
+            <li className="text-ink-soft">Casa</li>
+            <li aria-hidden="true" className="text-line font-semibold">
+              /
+            </li>
+            <li className="min-w-0">
+              <h1 className="text-ink truncate font-semibold">Lista de desejos</h1>
+            </li>
+          </ol>
+        </nav>
+        <SignOutButton />
       </header>
 
       {error ? (
@@ -104,28 +113,51 @@ export function WishlistPage({ userEmail, initialData }: WishlistPageProps) {
         </div>
       ) : null}
 
-      <AddItemPanel areas={areas} categories={categories} onAdd={addItem} />
-
       <FiltersBar areas={areas} categories={categories} filters={filters} onChange={setFilters} />
+
+      <AddItemPanel
+        areas={areas}
+        categories={categories}
+        onAdd={addItem}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+      />
 
       <section>
         <h2 className="text-ink-soft mb-2 ml-0.5 flex items-center gap-2 text-[13px] tracking-[0.04em] uppercase">
           Pendentes
-          <span className="bg-line text-ink rounded-full px-2 py-px text-xs">{pending.length}</span>
+          <Tag className="bg-priority-media-soft text-priority-media">{pending.length}</Tag>
         </h2>
-        <ItemTable items={pending} {...tableProps} />
+        {viewMode === "table" ? (
+          <ItemTable items={pending} {...tableProps} />
+        ) : (
+          <ItemGrid items={pending} {...tableProps} />
+        )}
       </section>
 
       {purchased.length > 0 ? (
         <section>
           <h2 className="text-ink-soft mb-2 ml-0.5 flex items-center gap-2 text-[13px] tracking-[0.04em] uppercase">
             Já comprados
-            <span className="bg-line text-ink rounded-full px-2 py-px text-xs">
-              {purchased.length}
-            </span>
+            <Tag className="bg-accent-soft text-accent">{purchased.length}</Tag>
           </h2>
-          <ItemTable items={purchased} {...tableProps} />
+          {viewMode === "table" ? (
+            <ItemTable items={purchased} {...tableProps} />
+          ) : (
+            <ItemGrid items={purchased} {...tableProps} />
+          )}
         </section>
+      ) : null}
+
+      {editingItem ? (
+        <EditItemDialog
+          key={editingItem.id}
+          item={editingItem}
+          areas={areas}
+          categories={categories}
+          onClose={() => setEditingId(null)}
+          onSave={handleSave}
+        />
       ) : null}
     </main>
   );

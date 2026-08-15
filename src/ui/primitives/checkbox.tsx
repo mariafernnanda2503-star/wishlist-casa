@@ -5,6 +5,8 @@ import { CheckIcon } from "@/ui/icons";
 
 type CheckboxProps = Omit<ComponentPropsWithRef<"input">, "type"> & {
   label: string;
+  labelClassName?: string;
+  indicatorClassName?: string;
 };
 
 /**
@@ -12,7 +14,13 @@ type CheckboxProps = Omit<ComponentPropsWithRef<"input">, "type"> & {
  * foco, o clique e o valor do formulário. O quadrado é um irmão que reage via
  * `peer-*`. Sem relevo: aqui a marca é a cor, não a sombra.
  */
-export function Checkbox({ label, className, ...props }: CheckboxProps) {
+export function Checkbox({
+  label,
+  labelClassName,
+  indicatorClassName,
+  className,
+  ...props
+}: CheckboxProps) {
   return (
     <label className={cn("flex cursor-pointer items-center gap-2 select-none", className)}>
       <input type="checkbox" className="peer sr-only" {...props} />
@@ -29,11 +37,12 @@ export function Checkbox({ label, className, ...props }: CheckboxProps) {
           "peer-checked:bg-accent-soft peer-checked:text-accent",
           "peer-focus-visible:shadow-control-focus",
           "[&_svg]:opacity-0 peer-checked:[&_svg]:opacity-100",
+          indicatorClassName,
         )}
       >
         <CheckIcon className="size-2.5 transition-opacity duration-100" strokeWidth={3.5} />
       </span>
-      {label}
+      <span className={labelClassName}>{label}</span>
     </label>
   );
 }

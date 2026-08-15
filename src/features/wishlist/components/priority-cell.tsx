@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { useFloatingMenu } from "@/shared/hooks/use-floating-menu";
+
 import { PRIORITIES, PRIORITY_LABEL, PRIORITY_TAG_CLASS } from "../lib";
 import { type Item, type Priority } from "../types";
 
@@ -15,6 +17,12 @@ type PriorityCellProps = {
 export function PriorityCell({ item, onChange }: PriorityCellProps) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const floatingStyle = useFloatingMenu({
+    open,
+    anchorRef: containerRef,
+    minWidth: 112,
+    maxHeight: 240,
+  });
 
   useEffect(() => {
     if (!open) return;
@@ -42,7 +50,8 @@ export function PriorityCell({ item, onChange }: PriorityCellProps) {
       {open ? (
         <div
           role="menu"
-          className="popover absolute top-full left-0 z-10 mt-1.5 flex flex-col gap-px"
+          style={floatingStyle}
+          className="popover scrollbar-themed fixed z-50 flex flex-col gap-px overflow-y-auto overscroll-contain"
         >
           {PRIORITIES.map((priority) => (
             <button

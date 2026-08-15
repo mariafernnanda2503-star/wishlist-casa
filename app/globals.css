@@ -34,6 +34,9 @@
   --color-danger-soft: hsl(347 44% 94%);
   --color-danger-line: hsl(347 38% 86%);
 
+  /* Ação de edição — azul funcional, separado do jade da ação primária. */
+  --color-edit: hsl(215 58% 38%);
+
   /* Apoio ---------------------------------------------------------------
      Categoria é a única matiz fora das três da marca: ela precisa se separar
      da tag de área, que usa o jade. */
@@ -77,6 +80,18 @@
     0 4px 4px -5.6px rgb(0 0 0 / 0.4), 0 2px 4px -2.7px rgb(0 0 0 / 0.15),
     0 2px 6px -1px rgb(0 0 0 / 0.1);
 
+  /* Cabeçalho da tabela: o mesmo brilho e bisel dos controles, aplicado só
+     nos eixos horizontais para todas as células formarem uma faixa única. */
+  --shadow-table-header:
+    inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 -1px 0 var(--color-line),
+    inset 0 -3px 5px -4px rgb(0 0 0 / 0.3);
+
+  /* Tags do Primary: contorno interno discreto e um pequeno bisel na base. */
+  --shadow-tag: inset 0 0 0 1px rgb(0 0 0 / 0.1), inset 0 -0.1em 0 rgb(0 0 0 / 0.1);
+  --shadow-tag-hover:
+    inset 0 0 0 1px rgb(0 0 0 / 0.14), inset 0 -0.1em 0 rgb(0 0 0 / 0.1),
+    0 0 0 3px rgb(0 0 0 / 0.03);
+
   /* Pressionado: o bisel inverte — some o relevo, entra sombra interna e um
      anel branco por fora. É o que faz o controle parecer afundar. Vale para
      botão e campo (--input-shadow-active e --button-accent-shadow-active são
@@ -101,9 +116,9 @@
      O easing tem overshoot: o controle passa do ponto e volta. */
   --ease-jumpy: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
-  /* Gabarito é carregada em app/layout.tsx via next/font. O resto da pilha é
+  /* Google Sans é carregada em app/layout.tsx via next/font. O resto da pilha é
      fallback para o intervalo em que ela ainda não pintou. */
-  --font-sans: var(--font-gabarito), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-sans: var(--font-google-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 body {
@@ -144,7 +159,7 @@ body {
 @utility popover-item {
   display: block;
   width: 100%;
-  padding: 7px 10px;
+  padding: 7px 14px;
   border-radius: 6px;
   font-size: 13.5px;
   text-align: left;
@@ -163,6 +178,33 @@ body {
 
   &:active {
     background-color: var(--color-line);
+  }
+}
+
+/* Scrollbar reutilizável para página, tabelas, diálogos e menus flutuantes. */
+@utility scrollbar-themed {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
+
+  &::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    min-height: 32px;
+    border: 2px solid transparent;
+    border-radius: 5px;
+    background-color: var(--color-line);
+    background-clip: padding-box;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-ink-soft);
   }
 }
 

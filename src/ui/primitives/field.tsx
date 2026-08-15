@@ -25,9 +25,9 @@ export function Field({ label, trailing, className, ...props }: FieldProps) {
         {label}
       </label>
       <div className="relative">
-        <input id={id} className={cn(fieldClassName, trailing && "pr-10", className)} {...props} />
+        <input id={id} className={cn(fieldClassName, trailing && "pr-11", className)} {...props} />
         {trailing ? (
-          <span className="text-ink-soft absolute top-1/2 right-3 flex -translate-y-1/2 items-center">
+          <span className="text-ink-soft absolute top-1/2 right-3.5 flex -translate-y-1/2 items-center">
             {trailing}
           </span>
         ) : null}

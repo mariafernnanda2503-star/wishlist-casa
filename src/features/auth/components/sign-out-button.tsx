@@ -1,13 +1,18 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import { createClient } from "@/shared/lib/supabase/client";
+import { LogOutIcon } from "@/ui/icons";
+import { Button } from "@/ui/primitives";
 
 export function SignOutButton() {
   const router = useRouter();
+  const [signingOut, setSigningOut] = useState(false);
 
   async function onSignOut() {
+    setSigningOut(true);
     const supabase = createClient();
     await supabase.auth.signOut();
     router.replace("/login");
@@ -15,12 +20,15 @@ export function SignOutButton() {
   }
 
   return (
-    <button
+    <Button
       type="button"
       onClick={onSignOut}
-      className="text-ink-soft hover:text-ink focus-visible:outline-accent cursor-pointer rounded-sm text-[13px] underline-offset-2 transition-colors duration-100 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
+      disabled={signingOut}
+      variant="danger"
+      className="inline-flex items-center gap-2 text-[13px]"
     >
-      Sair
-    </button>
+      <LogOutIcon className="size-[15px]" />
+      {signingOut ? "Saindo..." : "Sair"}
+    </Button>
   );
 }

@@ -70,8 +70,12 @@ export function useWishlist(initialData: WishlistData) {
   const addItem = useCallback(
     async (draft: ItemDraft) => {
       const { error: insertError } = await supabase.from("items").insert(toRow(draft));
-      if (insertError) setError("Não consegui adicionar o item.");
-      else await reload();
+      if (insertError) {
+        setError("Não consegui adicionar o item.");
+        return false;
+      }
+      await reload();
+      return true;
     },
     [supabase, reload],
   );

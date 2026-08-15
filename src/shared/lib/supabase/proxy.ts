@@ -4,7 +4,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/shared/lib/env";
 import { type Database } from "@/shared/types/database";
 
-const PUBLIC_ROUTES = ["/login"];
+// `/nova-senha` fica de fora: quem chega lá já tem sessão, criada pelo
+// `/auth/callback` ao trocar o código do link de recuperação.
+const PUBLIC_ROUTES = ["/login", "/esqueci-senha", "/auth"];
 
 /**
  * Renova a sessão a cada request e barra quem não está logado. Chamado pelo

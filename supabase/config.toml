@@ -41,7 +41,7 @@ enabled = false
 [auth]
 enabled = true
 site_url = "http://localhost:3001"
-additional_redirect_urls = ["http://localhost:3001"]
+additional_redirect_urls = ["http://localhost:3001", "http://localhost:3001/auth/callback"]
 jwt_expiry = 3600
 enable_refresh_token_rotation = true
 # Contas são criadas à mão no painel do Supabase.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type FormEvent } from "react";
+import { useMemo, useRef, useState, type FormEvent } from "react";
 
 import { Button, Input, Select } from "@/ui/primitives";
 
@@ -42,6 +42,27 @@ export function ItemForm({
   const [values, setValues] = useState<ItemFormValues>(initialValues);
   const [error, setError] = useState<string | null>(null);
   const nameRef = useRef<HTMLInputElement>(null);
+
+  // Área e categoria são opcionais: a entrada vazia é o "nenhuma" de verdade,
+  // e o gatilho mostra o rótulo enquanto ela estiver escolhida.
+  const areaOptions = useMemo(
+    () => [
+      { value: "", label: "Nenhuma" },
+      ...areas.map((area) => ({ value: area.id, label: area.name })),
+    ],
+    [areas],
+  );
+  const categoryOptions = useMemo(
+    () => [
+      { value: "", label: "Nenhuma" },
+      ...categories.map((category) => ({ value: category.id, label: category.name })),
+    ],
+    [categories],
+  );
+  const priorityOptions = useMemo(
+    () => PRIORITIES.map((priority) => ({ value: priority, label: PRIORITY_FORM_LABEL[priority] })),
+    [],
+  );
 
   function setField<K extends keyof ItemFormValues>(field: K, value: ItemFormValues[K]) {
     setValues((current) => ({ ...current, [field]: value }));
@@ -99,41 +120,30 @@ export function ItemForm({
 
       <div className="flex gap-2">
         <Select
-          className="min-w-0 flex-1"
+          aria-label="Área"
+          placeholder="Área (opcional)"
+          options={areaOptions}
           value={values.areaId}
-          onChange={(event) => setField("areaId", event.target.value)}
-        >
-          <option value="">Área (opcional)</option>
-          {areas.map((area) => (
-            <option key={area.id} value={area.id}>
-              {area.name}
-            </option>
-          ))}
-        </Select>
+          onChange={(value) => setField("areaId", value)}
+          wrapperClassName="min-w-0 flex-1"
+        />
         <Select
-          className="min-w-0 flex-1"
+          aria-label="Categoria"
+          placeholder="Categoria (opcional)"
+          options={categoryOptions}
           value={values.categoryId}
-          onChange={(event) => setField("categoryId", event.target.value)}
-        >
-          <option value="">Categoria (opcional)</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </Select>
+          onChange={(value) => setField("categoryId", value)}
+          wrapperClassName="min-w-0 flex-1"
+        />
       </div>
 
       <Select
+        aria-label="Prioridade"
+        placeholder="Prioridade"
+        options={priorityOptions}
         value={values.priority}
-        onChange={(event) => setField("priority", event.target.value as ItemFormValues["priority"])}
-      >
-        {PRIORITIES.map((priority) => (
-          <option key={priority} value={priority}>
-            {PRIORITY_FORM_LABEL[priority]}
-          </option>
-        ))}
-      </Select>
+        onChange={(value) => setField("priority", value as ItemFormValues["priority"])}
+      />
 
       <Input
         type="text"

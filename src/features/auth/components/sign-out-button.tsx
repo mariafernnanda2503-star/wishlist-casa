@@ -18,7 +18,7 @@ export function SignOutButton() {
     <button
       type="button"
       onClick={onSignOut}
-      className="text-ink-soft cursor-pointer text-[13px] underline-offset-2 hover:underline"
+      className="text-ink-soft hover:text-ink focus-visible:outline-accent cursor-pointer rounded-sm text-[13px] underline-offset-2 transition-colors duration-100 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
     >
       Sair
     </button>

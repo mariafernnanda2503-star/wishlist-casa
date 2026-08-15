@@ -1,9 +1,11 @@
 "use client";
 
-import { Input, Select } from "@/ui/primitives";
+import { useMemo } from "react";
+
+import { SearchField, Select, type SelectOption } from "@/ui/primitives";
 
 import { ALL, PRIORITIES, PRIORITY_LABEL } from "../lib";
-import { type Area, type Category, type Priority } from "../types";
+import { type Area, type Category } from "../types";
 
 export type Filters = {
   search: string;
@@ -19,62 +21,74 @@ type FiltersBarProps = {
   onChange: (filters: Filters) => void;
 };
 
-const filterSelectClassName = "min-w-0 flex-1 px-2.5 py-2 text-[13.5px] text-ink-soft";
+const FILTER_TRIGGER = "py-2 pl-2.5 text-[13.5px]";
+
+/** Primeira entrada limpa o filtro; o rótulo do gatilho fica fora da lista. */
+const RESET: SelectOption = { value: ALL, label: "Todas" };
 
 export function FiltersBar({ areas, categories, filters, onChange }: FiltersBarProps) {
   function update<K extends keyof Filters>(field: K, value: Filters[K]) {
     onChange({ ...filters, [field]: value });
   }
 
+  const areaOptions = useMemo(
+    () => [RESET, ...areas.map((area) => ({ value: area.id, label: area.name }))],
+    [areas],
+  );
+  const categoryOptions = useMemo(
+    () => [RESET, ...categories.map((category) => ({ value: category.id, label: category.name }))],
+    [categories],
+  );
+  const priorityOptions = useMemo(
+    () => [
+      RESET,
+      ...PRIORITIES.map((priority) => ({ value: priority, label: PRIORITY_LABEL[priority] })),
+    ],
+    [],
+  );
+
   return (
     <div className="mb-5 flex flex-col gap-2">
-      <Input
-        type="text"
-        placeholder="🔎 Buscar produto..."
+      <SearchField
+        placeholder="Buscar produto..."
+        aria-label="Buscar produto"
         className="text-[14.5px]"
         value={filters.search}
         onChange={(event) => update("search", event.target.value)}
+        onClear={() => update("search", "")}
       />
+
       <div className="flex gap-2">
         <Select
           aria-label="Filtrar por área"
-          className={filterSelectClassName}
+          placeholder="Área"
+          emptyValue={ALL}
+          options={areaOptions}
           value={filters.areaId}
-          onChange={(event) => update("areaId", event.target.value)}
-        >
-          <option value={ALL}>Área</option>
-          {areas.map((area) => (
-            <option key={area.id} value={area.id}>
-              {area.name}
-            </option>
-          ))}
-        </Select>
+          onChange={(value) => update("areaId", value)}
+          wrapperClassName="min-w-0 flex-1"
+          className={FILTER_TRIGGER}
+        />
         <Select
           aria-label="Filtrar por categoria"
-          className={filterSelectClassName}
+          placeholder="Categoria"
+          emptyValue={ALL}
+          options={categoryOptions}
           value={filters.categoryId}
-          onChange={(event) => update("categoryId", event.target.value)}
-        >
-          <option value={ALL}>Categoria</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </Select>
+          onChange={(value) => update("categoryId", value)}
+          wrapperClassName="min-w-0 flex-1"
+          className={FILTER_TRIGGER}
+        />
         <Select
           aria-label="Filtrar por prioridade"
-          className={filterSelectClassName}
+          placeholder="Prioridade"
+          emptyValue={ALL}
+          options={priorityOptions}
           value={filters.priority}
-          onChange={(event) => update("priority", event.target.value)}
-        >
-          <option value={ALL}>Prioridade</option>
-          {PRIORITIES.map((priority: Priority) => (
-            <option key={priority} value={priority}>
-              {PRIORITY_LABEL[priority]}
-            </option>
-          ))}
-        </Select>
+          onChange={(value) => update("priority", value)}
+          wrapperClassName="min-w-0 flex-1"
+          className={FILTER_TRIGGER}
+        />
       </div>
     </div>
   );

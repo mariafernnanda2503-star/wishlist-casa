@@ -1,44 +1,51 @@
 @import "tailwindcss";
 
-/* Paleta derivada do tema claro do Primary (Obsidian): sépia quente, base
-   monocromática marrom e cores de apoio dessaturadas. Os valores vêm das rampas
-   --color-l-* do tema; a correspondência está anotada em cada linha.
+/* Paleta da marca: jade botanical (#479C73), sangria deep (#7A1229) e o fundo
+   #E4EAE8. A base neutra é construída na mesma matiz do fundo (160°), então o
+   cinza do app nunca é cinza puro — puxa levemente para o verde e amarra com
+   o jade. A estrutura de relevo continua vindo do tema Primary.
 
    Estes tokens são a única fonte de cor do app — o ESLint recusa cores literais
    do Tailwind (bg-green-600, text-gray-500...) no código. */
 @theme {
-  /* Base monocromática ------------------------------------------------ */
-  --color-canvas: hsl(35 36% 96%); /* gray-20  — fundo da página */
-  --color-surface: hsl(36 38% 98%); /* gray-10  — cartões e tabela */
-  --color-surface-alt: hsl(35 37% 92%); /* gray-30  — cabeçalho e linha em edição */
-  --color-line: hsl(37 38% 83%); /* gray-60  — bordas */
+  /* Base neutra, toda na matiz do fundo da marca ----------------------- */
+  --color-canvas: hsl(160 13% 91%); /* #E4EAE8 — fundo da página */
+  --color-surface: hsl(160 18% 97%); /* cartões e tabela, acima do fundo */
+  --color-surface-alt: hsl(160 13% 94%); /* cabeçalho e linha em edição */
+  --color-line: hsl(160 12% 83%); /* bordas */
 
-  --color-ink: hsl(31 45% 24%); /* gray-130 — texto principal */
-  --color-ink-soft: hsl(35 28% 40%); /* gray-100 — texto secundário */
+  --color-ink: hsl(160 22% 15%); /* texto principal */
+  --color-ink-soft: hsl(160 10% 40%); /* texto secundário */
 
-  /* Acento -------------------------------------------------------------
-     O verde original do app, mantido sobre a base sépia do Primary. É escuro
-     o bastante (5,5:1 no canvas) para servir aos dois papéis — fundo de botão
-     com texto claro em cima, e texto de destaque sobre fundo claro. */
-  --color-accent: hsl(162 40% 31%); /* #2F6E5B */
-  --color-accent-hover: hsl(162 38% 38%);
-  --color-accent-soft: hsl(155 26% 91%);
-  --color-on-accent: hsl(36 38% 98%); /* gray-10 — texto sobre o acento */
+  /* Acento — jade botanical --------------------------------------------
+     #479C73 puro dá só 3,35:1 com texto claro em cima, abaixo do mínimo para
+     o texto do botão. O sólido usa o jade escurecido (5,2:1) e o hover usa o
+     #479C73 exato: a cor da marca aparece, e clarear no hover é o movimento
+     natural sobre fundo claro. */
+  --color-accent: hsl(151 40% 34%);
+  --color-accent-hover: hsl(151 37% 44%); /* #479C73 */
+  --color-accent-soft: hsl(151 28% 88%);
+  --color-on-accent: hsl(160 18% 97%);
+  --color-ring: hsl(151 40% 34% / 0.28); /* anel de foco */
 
-  /* Cores de apoio, nas matizes das rampas do tema ---------------------- */
-  --color-category: hsl(265 70% 30%); /* purple-40 */
-  --color-category-soft: hsl(274 33% 93%);
+  /* Sangria deep — destrutivo e prioridade alta -------------------------
+     O mesmo par que o app já usava: apagar e "urgente" compartilham a cor. */
+  --color-danger: hsl(347 74% 27%); /* #7A1229 */
+  --color-danger-soft: hsl(347 44% 94%);
+  --color-danger-line: hsl(347 38% 86%);
 
-  --color-danger: hsl(4 72% 35%); /* red-40 */
-  --color-danger-soft: hsl(4 62% 94%);
-  --color-danger-line: hsl(4 55% 86%);
+  /* Apoio ---------------------------------------------------------------
+     Categoria é a única matiz fora das três da marca: ela precisa se separar
+     da tag de área, que usa o jade. */
+  --color-category: hsl(265 45% 36%);
+  --color-category-soft: hsl(268 30% 93%);
 
-  --color-priority-alta: hsl(4 72% 35%); /* red-40 */
-  --color-priority-alta-soft: hsl(4 62% 94%);
-  --color-priority-media: hsl(40 98% 36%); /* yellow-40 */
-  --color-priority-media-soft: hsl(43 75% 90%);
-  --color-priority-baixa: hsl(35 28% 40%); /* gray-100 */
-  --color-priority-baixa-soft: hsl(34 34% 90%); /* gray-40 */
+  --color-priority-alta: hsl(347 74% 27%); /* sangria */
+  --color-priority-alta-soft: hsl(347 44% 94%);
+  --color-priority-media: hsl(38 85% 32%);
+  --color-priority-media-soft: hsl(42 65% 90%);
+  --color-priority-baixa: hsl(160 10% 40%);
+  --color-priority-baixa-soft: hsl(160 13% 90%);
 
   /* Relevo -------------------------------------------------------------
      O que dá o acabamento dos controles do tema não é borda, é sombra em
@@ -63,10 +70,157 @@
     0 4px 4px -5.6px rgb(0 0 0 / 0.52), 0 2px 4px -2.7px rgb(0 0 0 / 0.27),
     0 2px 6px -1px rgb(0 0 0 / 0.24);
 
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  /* Hover de campo: o brilho do topo dobra e a linha de borda escurece. */
+  --shadow-control-hover:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.4), inset 0 0 0 1px rgb(0 0 0 / 0.15),
+    inset 0 -2px 0 2px rgb(0 0 0 / 0.09), inset 0 -2px 4px 0 rgb(0 0 0 / 0.1),
+    0 4px 4px -5.6px rgb(0 0 0 / 0.4), 0 2px 4px -2.7px rgb(0 0 0 / 0.15),
+    0 2px 6px -1px rgb(0 0 0 / 0.1);
+
+  /* Pressionado: o bisel inverte — some o relevo, entra sombra interna e um
+     anel branco por fora. É o que faz o controle parecer afundar. Vale para
+     botão e campo (--input-shadow-active e --button-accent-shadow-active são
+     o mesmo valor no tema). */
+  --shadow-control-active:
+    inset 0 0 0 1px rgb(0 0 0 / 0.15), inset 0 0 0 3px rgb(0 0 0 / 0.09),
+    inset 0 2px 8px 0 rgb(0 0 0 / 0.2), 0 0 0 1px rgb(255 255 255 / 0.6);
+
+  /* Foco: mesma estrutura do repouso mais um anel externo. O tema usa
+     --color-l-alpha-gray (bege a 15%), fraco demais como indicador de foco;
+     trocado pelo acento a 25%, que mantém a forma e fica visível. */
+  --shadow-control-focus:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.2), inset 0 0 0 1px rgb(0 0 0 / 0.1),
+    inset 0 -2px 0 2px rgb(0 0 0 / 0.09), inset 0 -2px 4px 0 rgb(0 0 0 / 0.1),
+    0 2px 4px -2.7px rgb(0 0 0 / 0.1), 0 0 0 3px var(--color-ring);
+
+  /* Menus flutuantes — --shadow-s do tema. */
+  --shadow-popover:
+    0 1px 2px rgb(0 0 0 / 0.028), 0 3.4px 6.7px rgb(0 0 0 / 0.042), 0 15px 30px rgb(0 0 0 / 0.07);
+
+  /* Movimento — defaults do Obsidian que o tema referencia em --button-anim.
+     O easing tem overshoot: o controle passa do ponto e volta. */
+  --ease-jumpy: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* Gabarito é carregada em app/layout.tsx via next/font. O resto da pilha é
+     fallback para o intervalo em que ela ainda não pintou. */
+  --font-sans: var(--font-gabarito), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 body {
   background-color: var(--color-canvas);
   color: var(--color-ink);
+}
+
+/* O popup do <select> é desenhado pelo sistema operacional e ignora CSS. O
+   `base-select` troca esse desenho pelo do próprio navegador, e aí ele aceita
+   estilo. Onde não houver suporte (hoje, fora do Chrome), o dropdown nativo
+   continua funcionando — é para isso que serve o @supports. */
+/* Menu flutuante, com as medidas do Primary: painel com raio de --size-4-4
+   (16px) e itens com --menu-item-radius (--radius-m - 1px = 7px).
+
+   O hover dos itens no tema é `rgba(255,255,255,.35)` — ele *clareia* em vez de
+   escurecer. O valor literal não serviria aqui, porque a nossa superfície já é
+   97% clara e o branco por cima não mudaria nada. Então traduzimos o mecanismo:
+   o painel assenta em `surface-alt` e o item clareia para `surface`. */
+/* Menu flutuante. O relevo é o mesmo dos controles — brilho de 1px no topo e
+   linha escura fazendo o papel de borda — em vez de `border`, que deixaria o
+   painel como o único elemento do app fora dessa linguagem.
+
+   O hover dos itens no tema *clareia* (`rgba(255,255,255,.35)`) em vez de
+   escurecer. O valor literal não serviria aqui, porque a superfície já é 97%
+   clara; então o painel assenta em `surface-alt` e o item clareia para
+   `surface`, preservando o mecanismo. */
+@utility popover {
+  padding: 5px;
+  border-radius: 10px;
+  background-color: var(--color-surface-alt);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.5),
+    inset 0 0 0 1px rgb(0 0 0 / 0.12),
+    var(--shadow-popover);
+  animation: popover-in 160ms ease-out both;
+}
+
+@utility popover-item {
+  display: block;
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 13.5px;
+  text-align: left;
+  white-space: nowrap;
+  color: var(--color-ink);
+  background-color: transparent;
+  cursor: pointer;
+  transition: background-color 100ms;
+  animation: popover-item-in 160ms ease-out both;
+
+  &:hover,
+  &:focus-visible {
+    background-color: var(--color-surface);
+    outline: none;
+  }
+
+  &:active {
+    background-color: var(--color-line);
+  }
+}
+
+/* Entrada curta: o overshoot do tema (--anim-popup, 0.3s) é dimensionado para
+   modal e fica exagerado num menu de três linhas. */
+@keyframes popover-in {
+  from {
+    transform: translateY(-4px) scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes popover-item-in {
+  from {
+    transform: translateY(-2px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Stagger: cada item entra logo após o anterior, em vez do bloco inteiro de
+   uma vez. CSS não tem laço, então as posições vão explícitas. */
+.popover-item:nth-child(1) {
+  animation-delay: 30ms;
+}
+.popover-item:nth-child(2) {
+  animation-delay: 55ms;
+}
+.popover-item:nth-child(3) {
+  animation-delay: 80ms;
+}
+.popover-item:nth-child(4) {
+  animation-delay: 105ms;
+}
+.popover-item:nth-child(5) {
+  animation-delay: 130ms;
+}
+.popover-item:nth-child(n + 6) {
+  animation-delay: 150ms;
+}
+
+/* O easing do tema tem overshoot, o que é justamente o tipo de movimento que
+   incomoda quem pede menos animação. Aqui os estados continuam todos, só
+   deixam de ser animados. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    /* Sem isto o stagger dos menus continuaria escalonando a entrada. */
+    animation-delay: 0ms !important;
+  }
 }

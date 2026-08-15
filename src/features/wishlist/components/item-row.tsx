@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/shared/lib/cn";
+import { CheckIcon, LinkIcon, TrashIcon } from "@/ui/icons";
 
 import { formatPrice } from "../lib";
 import { type Item, type Priority } from "../types";
@@ -42,9 +43,9 @@ export function ItemRow({
       target="_blank"
       rel="noopener noreferrer"
       title="Ver produto"
-      className="inline-flex items-center justify-center text-xl leading-none no-underline"
+      className="text-ink-soft hover:text-accent focus-visible:outline-accent inline-flex items-center justify-center rounded-sm no-underline transition-colors duration-100 focus-visible:outline-2 focus-visible:outline-offset-2"
     >
-      🔗
+      <LinkIcon />
     </a>
   ) : null;
 
@@ -67,10 +68,14 @@ export function ItemRow({
           title={`Marcar como ${purchased ? "pendente" : "comprado"}`}
           className={cn(
             "text-on-accent flex size-[22px] cursor-pointer items-center justify-center rounded-full border-2 p-0 text-xs font-bold max-sm:size-6",
-            purchased ? "border-accent bg-accent" : "border-line bg-surface",
+            "ease-jumpy transition-[background-color,border-color,transform] duration-100",
+            "focus-visible:shadow-control-focus focus-visible:outline-none active:scale-90",
+            purchased
+              ? "border-accent bg-accent hover:border-accent-hover hover:bg-accent-hover"
+              : "border-line bg-surface hover:border-accent",
           )}
         >
-          {purchased ? "✓" : ""}
+          {purchased ? <CheckIcon className="size-3" strokeWidth={3.5} /> : null}
         </button>
       </td>
 
@@ -79,7 +84,7 @@ export function ItemRow({
           type="button"
           onClick={() => onEdit(item.id)}
           title="Editar item"
-          className="group block cursor-pointer border-none bg-transparent p-0 text-left"
+          className="group focus-visible:outline-accent block cursor-pointer rounded-sm border-none bg-transparent p-0 text-left focus-visible:outline-2 focus-visible:outline-offset-2"
         >
           <div
             className={cn(
@@ -138,9 +143,9 @@ export function ItemRow({
           type="button"
           title="Remover"
           onClick={() => onDelete(item.id)}
-          className="text-ink-soft active:text-danger cursor-pointer border-none bg-transparent px-1 py-0.5 text-lg leading-none"
+          className="text-ink-soft hover:text-danger active:text-danger focus-visible:outline-accent ease-jumpy cursor-pointer rounded-sm border-none bg-transparent p-1 transition-[color,transform] duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-90"
         >
-          ×
+          <TrashIcon className="size-[15px]" />
         </button>
       </td>
     </tr>

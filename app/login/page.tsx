@@ -1,11 +1,20 @@
-import { LoginForm } from "@/features/auth/components";
+import { AuthShell, LoginForm } from "@/features/auth/components";
 
-export default function LoginPage() {
+type LoginPageProps = {
+  searchParams: Promise<{ erro?: string }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const { erro } = await searchParams;
+
   return (
-    <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-4 pb-16">
-      <h1 className="mb-1 text-[22px] font-semibold">🏠 Wishlist da Casa</h1>
-      <p className="text-ink-soft mb-6 text-sm">Entre para ver e editar a lista.</p>
+    <AuthShell>
+      {erro === "link" ? (
+        <p className="border-danger-line bg-danger-soft text-danger mb-2 rounded-lg border px-3 py-2.5 text-[13px]">
+          Esse link expirou ou já foi usado. Peça um novo abaixo.
+        </p>
+      ) : null}
       <LoginForm />
-    </main>
+    </AuthShell>
   );
 }

@@ -13,10 +13,10 @@ type AddItemPanelProps = {
 export function AddItemPanel({ areas, categories, onAdd }: AddItemPanelProps) {
   return (
     <details className="border-line bg-surface mb-4 overflow-hidden rounded-xl border">
-      <summary className="text-accent cursor-pointer list-none p-3.5 text-[15px] font-semibold [&::-webkit-details-marker]:hidden">
+      <summary className="text-accent hover:bg-surface-alt focus-visible:bg-surface-alt cursor-pointer list-none p-3 text-[15px] font-semibold transition-colors duration-100 focus-visible:outline-none [&::-webkit-details-marker]:hidden">
         + Adicionar item
       </summary>
-      <div className="px-3.5 pb-3.5">
+      <div className="px-3 pb-3">
         <ItemForm
           areas={areas}
           categories={categories}

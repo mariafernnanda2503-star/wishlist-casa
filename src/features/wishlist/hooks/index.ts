@@ -3,3 +3,4 @@ export { useLists } from "./use-lists";
 export { useMembers, type Member } from "./use-members";
 export { usePriceHistory } from "./use-price-history";
 export { useWishlist } from "./use-wishlist";
+export { useWorkspaces } from "./use-workspaces";

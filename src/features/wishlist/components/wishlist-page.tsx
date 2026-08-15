@@ -21,6 +21,7 @@ import { ListSwitcher } from "./list-switcher";
 import { MembersDialog } from "./members-dialog";
 import { Tag } from "./tag";
 import { TotalsPanel } from "./totals-panel";
+import { WorkspaceSwitcher } from "./workspace-switcher";
 
 const NO_FILTERS: Filters = { search: "", groupId: ALL, typeId: ALL, priority: ALL };
 type ListTab = "shopping" | "purchased";
@@ -128,7 +129,9 @@ export function WishlistPage({
       <header className="bg-surface shadow-control mb-4 flex items-center justify-between gap-3 rounded-[10px] px-4 py-3 max-sm:px-3 max-sm:py-2.5">
         <nav aria-label="Navegação estrutural" className="min-w-0">
           <ol className="flex items-center gap-2 text-sm max-sm:gap-1.5 max-sm:text-[13px]">
-            <li className="text-ink-soft max-[359px]:hidden">{context.activeWorkspace.name}</li>
+            <li className="min-w-0 max-[359px]:hidden">
+              <WorkspaceSwitcher context={context} />
+            </li>
             <li aria-hidden="true" className="text-line font-semibold max-[359px]:hidden">
               /
             </li>

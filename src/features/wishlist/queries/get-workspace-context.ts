@@ -6,12 +6,17 @@ import { type WorkspaceContext } from "../types";
 /**
  * Resolve onde a pessoa está antes de qualquer dado de item ser carregado.
  *
- * A lista ativa vem da URL para o endereço ser compartilhável e sobreviver a
- * recarga; sem parâmetro, cai na primeira lista do primeiro workspace. Um id
- * que não pertence a nenhum workspace dela é ignorado em silêncio — a RLS já
- * não devolveria a linha, e cair na lista padrão é melhor que uma tela de erro.
+ * Os dois parâmetros vêm da URL para o endereço identificar o que está aberto:
+ * recarregar ou mandar o link cai no mesmo lugar. `lista` ganha de `espaco` —
+ * apontar para uma lista já diz de qual workspace ela é.
+ *
+ * Id que não pertence a nenhum workspace da pessoa é ignorado em silêncio: a
+ * RLS já não devolveria a linha, e cair no padrão é melhor que uma tela de erro.
  */
-export async function getWorkspaceContext(listId?: string): Promise<WorkspaceContext | null> {
+export async function getWorkspaceContext(params: {
+  listId?: string;
+  workspaceId?: string;
+}): Promise<WorkspaceContext | null> {
   const supabase = await createClient();
 
   const [membershipsRes, listsRes] = await Promise.all([
@@ -25,22 +30,42 @@ export async function getWorkspaceContext(listId?: string): Promise<WorkspaceCon
   }
 
   const memberships = membershipsRes.data.filter((entry) => entry.workspaces !== null);
-  if (memberships.length === 0 || listsRes.data.length === 0) return null;
+  if (memberships.length === 0) return null;
 
-  const requested = listId ? listsRes.data.find((list) => list.id === listId) : undefined;
-  const activeList = requested ?? listsRes.data[0];
-  if (!activeList) return null;
+  const requestedList = params.listId
+    ? listsRes.data.find((list) => list.id === params.listId)
+    : undefined;
 
-  const activeMembership =
-    memberships.find((entry) => entry.workspaces?.id === activeList.workspace_id) ?? memberships[0];
-  if (!activeMembership?.workspaces) return null;
+  const requestedMembership = params.workspaceId
+    ? memberships.find((entry) => entry.workspaces?.id === params.workspaceId)
+    : undefined;
+
+  // Ordem: lista pedida → workspace pedido → primeiro que existir.
+  const membership =
+    (requestedList
+      ? memberships.find((entry) => entry.workspaces?.id === requestedList.workspace_id)
+      : undefined) ??
+    requestedMembership ??
+    memberships[0];
+
+  const workspace = membership?.workspaces;
+  if (!workspace) return null;
+
+  const lists = listsRes.data.filter((list) => list.workspace_id === workspace.id);
+  const activeList = requestedList?.workspace_id === workspace.id ? requestedList : lists[0];
+
+  // Um trigger garante que todo workspace nasce com uma lista; chegar aqui sem
+  // nenhuma significa que as listas foram arquivadas por fora do app.
+  if (!activeList) {
+    logger.warn("workspace.without_lists", { workspaceId: workspace.id });
+    return null;
+  }
 
   return {
     workspaces: memberships.flatMap((entry) => (entry.workspaces ? [entry.workspaces] : [])),
-    activeWorkspace: activeMembership.workspaces,
-    // Só as listas do workspace ativo; as outras aparecem ao trocar de workspace.
-    lists: listsRes.data.filter((list) => list.workspace_id === activeMembership.workspaces?.id),
+    activeWorkspace: workspace,
+    lists,
     activeList,
-    role: activeMembership.role === "owner" ? "owner" : "member",
+    role: membership.role === "owner" ? "owner" : "member",
   };
 }

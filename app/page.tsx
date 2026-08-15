@@ -9,6 +9,8 @@ type HomeProps = {
   searchParams: Promise<{
     /** Lista aberta. Fica na URL para o endereço ser compartilhável. */
     lista?: string;
+    /** Espaço aberto, quando ainda não se sabe qual lista dele mostrar. */
+    espaco?: string;
     /** Preenchidos pelo compartilhamento do Android (ver public/manifest.webmanifest). */
     title?: string;
     text?: string;
@@ -37,7 +39,10 @@ export default async function Home({ searchParams }: HomeProps) {
   if (!user) redirect("/login");
 
   const params = await searchParams;
-  const context = await getWorkspaceContext(params.lista);
+  const context = await getWorkspaceContext({
+    listId: params.lista,
+    workspaceId: params.espaco,
+  });
 
   if (!context) {
     return <Aviso>Você ainda não participa de nenhuma lista. Peça um convite.</Aviso>;

@@ -49,7 +49,7 @@ export function Dialog({ title, eyebrow, closeLabel = "Fechar", onClose, childre
             type="button"
             onClick={onClose}
             aria-label={closeLabel}
-            className="bg-surface-alt text-ink-soft shadow-control hover:bg-surface hover:text-ink hover:shadow-control-hover active:shadow-control-active focus-visible:shadow-control-focus inline-flex size-8 cursor-pointer items-center justify-center rounded-[6px] transition-[background-color,color,box-shadow] duration-100 focus-visible:outline-none"
+            className="bg-surface-alt text-danger shadow-control hover:bg-surface hover:shadow-control-hover active:shadow-control-active focus-visible:shadow-control-focus inline-flex size-8 cursor-pointer items-center justify-center rounded-[6px] transition-[background-color,color,box-shadow] duration-100 focus-visible:outline-none"
           >
             <XIcon />
           </button>

@@ -1,6 +1,7 @@
 export { Button } from "./button";
 export { Checkbox } from "./checkbox";
 export { Dialog } from "./dialog";
+export { Drawer } from "./drawer";
 export { Field } from "./field";
 export { Input, fieldClassName } from "./input";
 export { PasswordField } from "./password-field";

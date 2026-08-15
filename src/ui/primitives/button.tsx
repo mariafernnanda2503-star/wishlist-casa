@@ -7,8 +7,6 @@ const VARIANTS = {
     "bg-accent text-on-accent shadow-control-accent hover:bg-accent-hover hover:shadow-control-accent-hover",
   secondary:
     "bg-surface text-ink-soft shadow-control hover:bg-surface-alt hover:shadow-control-hover",
-  danger:
-    "bg-surface text-danger shadow-control hover:bg-danger-soft hover:text-danger hover:shadow-control-hover [&_svg]:text-danger",
 } as const;
 
 type ButtonProps = ComponentPropsWithRef<"button"> & {

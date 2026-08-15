@@ -1,21 +1,23 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type KeyboardEvent } from "react";
 
 import { SignOutButton } from "@/features/auth/components";
+import { cn } from "@/shared/lib/cn";
 
 import { useWishlist } from "../hooks";
 import { ALL, normalizeText, PRIORITY_ORDER } from "../lib";
-import { type Item, type ItemDraft, type Priority, type WishlistData } from "../types";
+import { type Item, type Priority, type WishlistData } from "../types";
 
 import { AddItemPanel, type ViewMode } from "./add-item-panel";
-import { EditItemDialog } from "./edit-item-dialog";
 import { FiltersBar, type Filters } from "./filters-bar";
+import { ItemDetailsDrawer } from "./item-details-drawer";
 import { ItemGrid } from "./item-grid";
 import { ItemTable } from "./item-table";
 import { Tag } from "./tag";
 
 const NO_FILTERS: Filters = { search: "", areaId: ALL, categoryId: ALL, priority: ALL };
+type ListTab = "shopping" | "purchased";
 
 type WishlistPageProps = {
   initialData: WishlistData;
@@ -35,8 +37,9 @@ export function WishlistPage({ initialData }: WishlistPageProps) {
   } = useWishlist(initialData);
 
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("table");
+  const [activeTab, setActiveTab] = useState<ListTab>("shopping");
 
   const visibleItems = useMemo(() => {
     const search = normalizeText(filters.search.trim());
@@ -60,7 +63,7 @@ export function WishlistPage({ initialData }: WishlistPageProps) {
     () => visibleItems.filter((item) => item.status === "purchased"),
     [visibleItems],
   );
-  const editingItem = items.find((item) => item.id === editingId) ?? null;
+  const selectedItem = items.find((item) => item.id === selectedId) ?? null;
 
   const hasActiveFilter =
     filters.areaId !== ALL ||
@@ -71,23 +74,27 @@ export function WishlistPage({ initialData }: WishlistPageProps) {
     ? "Nenhum item encontrado com esse filtro/busca."
     : "Nada por aqui ainda.";
 
-  async function handleSave(id: string, draft: ItemDraft) {
-    const saved = await updateItem(id, draft);
-    if (saved) setEditingId(null);
+  function handleTabKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    event.preventDefault();
+    const nextTab = activeTab === "shopping" ? "purchased" : "shopping";
+    setActiveTab(nextTab);
+    requestAnimationFrame(() => document.getElementById(`${nextTab}-tab`)?.focus());
   }
 
   function handleDelete(id: string) {
-    if (window.confirm("Remover este item da lista?")) void deleteItem(id);
+    if (!window.confirm("Remover este item da lista?")) return;
+    setSelectedId(null);
+    void deleteItem(id);
   }
 
   const tableProps = {
     areas,
     categories,
     emptyMessage,
-    onEdit: setEditingId,
+    onOpen: setSelectedId,
     onToggleStatus: (item: Item) => void toggleStatus(item),
     onChangePriority: (id: string, priority: Priority) => void updatePriority(id, priority),
-    onDelete: handleDelete,
   };
 
   return (
@@ -123,11 +130,57 @@ export function WishlistPage({ initialData }: WishlistPageProps) {
         onViewModeChange={setViewMode}
       />
 
-      <section>
-        <h2 className="text-ink-soft mb-2 ml-0.5 flex items-center gap-2 text-[13px] tracking-[0.04em] uppercase">
-          Pendentes
+      <div
+        role="tablist"
+        aria-label="Itens da lista"
+        className="bg-surface-alt shadow-control mb-3 inline-flex items-center gap-1 rounded-[8px] p-1 max-sm:flex max-sm:w-full"
+      >
+        <button
+          type="button"
+          id="shopping-tab"
+          role="tab"
+          aria-selected={activeTab === "shopping"}
+          aria-controls="shopping-panel"
+          tabIndex={activeTab === "shopping" ? 0 : -1}
+          onClick={() => setActiveTab("shopping")}
+          onKeyDown={handleTabKeyDown}
+          className={cn(
+            "focus-visible:shadow-control-focus inline-flex cursor-pointer items-center gap-2 rounded-[6px] px-3 py-2 text-sm font-medium transition-[background-color,color,box-shadow] duration-100 focus-visible:outline-none max-sm:flex-1 max-sm:justify-center",
+            activeTab === "shopping"
+              ? "bg-surface text-ink shadow-tab-active"
+              : "text-ink-soft hover:bg-surface hover:text-ink",
+          )}
+        >
+          A comprar
           <Tag className="bg-priority-media-soft text-priority-media">{pending.length}</Tag>
-        </h2>
+        </button>
+        <button
+          type="button"
+          id="purchased-tab"
+          role="tab"
+          aria-selected={activeTab === "purchased"}
+          aria-controls="purchased-panel"
+          tabIndex={activeTab === "purchased" ? 0 : -1}
+          onClick={() => setActiveTab("purchased")}
+          onKeyDown={handleTabKeyDown}
+          className={cn(
+            "focus-visible:shadow-control-focus inline-flex cursor-pointer items-center gap-2 rounded-[6px] px-3 py-2 text-sm font-medium transition-[background-color,color,box-shadow] duration-100 focus-visible:outline-none max-sm:flex-1 max-sm:justify-center",
+            activeTab === "purchased"
+              ? "bg-surface text-ink shadow-tab-active"
+              : "text-ink-soft hover:bg-surface hover:text-ink",
+          )}
+        >
+          Comprados
+          <Tag className="bg-accent-soft text-accent">{purchased.length}</Tag>
+        </button>
+      </div>
+
+      <section
+        id="shopping-panel"
+        role="tabpanel"
+        aria-labelledby="shopping-tab"
+        hidden={activeTab !== "shopping"}
+      >
         {viewMode === "table" ? (
           <ItemTable items={pending} {...tableProps} />
         ) : (
@@ -135,28 +188,31 @@ export function WishlistPage({ initialData }: WishlistPageProps) {
         )}
       </section>
 
-      {purchased.length > 0 ? (
-        <section>
-          <h2 className="text-ink-soft mb-2 ml-0.5 flex items-center gap-2 text-[13px] tracking-[0.04em] uppercase">
-            Já comprados
-            <Tag className="bg-accent-soft text-accent">{purchased.length}</Tag>
-          </h2>
-          {viewMode === "table" ? (
-            <ItemTable items={purchased} {...tableProps} />
-          ) : (
-            <ItemGrid items={purchased} {...tableProps} />
-          )}
-        </section>
-      ) : null}
+      <section
+        id="purchased-panel"
+        role="tabpanel"
+        aria-labelledby="purchased-tab"
+        hidden={activeTab !== "purchased"}
+      >
+        {viewMode === "table" ? (
+          <ItemTable items={purchased} {...tableProps} />
+        ) : (
+          <ItemGrid items={purchased} {...tableProps} />
+        )}
+      </section>
 
-      {editingItem ? (
-        <EditItemDialog
-          key={editingItem.id}
-          item={editingItem}
+      {selectedItem ? (
+        <ItemDetailsDrawer
+          item={selectedItem}
           areas={areas}
           categories={categories}
-          onClose={() => setEditingId(null)}
-          onSave={handleSave}
+          areaName={areas.find((area) => area.id === selectedItem.area_id)?.name ?? "—"}
+          categoryName={
+            categories.find((category) => category.id === selectedItem.category_id)?.name ?? "—"
+          }
+          onClose={() => setSelectedId(null)}
+          onSave={updateItem}
+          onDelete={() => handleDelete(selectedItem.id)}
         />
       ) : null}
     </main>

@@ -30,7 +30,7 @@
 
   /* Sangria deep — destrutivo e prioridade alta -------------------------
      O mesmo par que o app já usava: apagar e "urgente" compartilham a cor. */
-  --color-danger: hsl(347 74% 27%); /* #7A1229 */
+  --color-danger: hsl(347 68% 43%); /* vermelho mais vivo para ações destrutivas */
   --color-danger-soft: hsl(347 44% 94%);
   --color-danger-line: hsl(347 38% 86%);
 
@@ -43,7 +43,7 @@
   --color-category: hsl(265 45% 36%);
   --color-category-soft: hsl(268 30% 93%);
 
-  --color-priority-alta: hsl(347 74% 27%); /* sangria */
+  --color-priority-alta: hsl(347 68% 43%); /* mesmo vermelho destrutivo */
   --color-priority-alta-soft: hsl(347 44% 94%);
   --color-priority-media: hsl(38 85% 32%);
   --color-priority-media-soft: hsl(42 65% 90%);
@@ -86,11 +86,18 @@
     inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 -1px 0 var(--color-line),
     inset 0 -3px 5px -4px rgb(0 0 0 / 0.3);
 
-  /* Tags do Primary: contorno interno discreto e um pequeno bisel na base. */
-  --shadow-tag: inset 0 0 0 1px rgb(0 0 0 / 0.1), inset 0 -0.1em 0 rgb(0 0 0 / 0.1);
+  /* Aba ativa do Primary: sobe da faixa secundária para a superfície. */
+  --shadow-tab-active:
+    inset 0 1px 0 rgb(255 255 255 / 0.55), inset 0 -2px 0 1px rgb(0 0 0 / 0.09),
+    0 1px 2px -0.1px rgb(0 0 0 / 0.15);
+
+  /* Tags: o mesmo relevo dos controles, em escala menor. */
+  --shadow-tag:
+    inset 0 1px 0 rgb(255 255 255 / 0.32), inset 0 0 0 1px rgb(0 0 0 / 0.1),
+    inset 0 -2px 0 rgb(0 0 0 / 0.08), 0 2px 3px -2px rgb(0 0 0 / 0.24);
   --shadow-tag-hover:
-    inset 0 0 0 1px rgb(0 0 0 / 0.14), inset 0 -0.1em 0 rgb(0 0 0 / 0.1),
-    0 0 0 3px rgb(0 0 0 / 0.03);
+    inset 0 1px 0 rgb(255 255 255 / 0.4), inset 0 0 0 1px rgb(0 0 0 / 0.14),
+    inset 0 -2px 0 rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.3), 0 0 0 3px rgb(0 0 0 / 0.03);
 
   /* Pressionado: o bisel inverte — some o relevo, entra sombra interna e um
      anel branco por fora. É o que faz o controle parecer afundar. Vale para
@@ -229,6 +236,34 @@ body {
   to {
     transform: translateY(0);
     opacity: 1;
+  }
+}
+
+@keyframes drawer-in {
+  from {
+    transform: translateX(18px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.drawer-panel {
+  animation: drawer-in 180ms ease-out both;
+}
+
+@media (max-width: 639px) {
+  @keyframes drawer-in {
+    from {
+      transform: translateY(18px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
 }
 

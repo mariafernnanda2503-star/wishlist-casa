@@ -1,12 +1,14 @@
 "use client";
 
+import { type MouseEvent } from "react";
+
 import { cn } from "@/shared/lib/cn";
 import { Checkbox } from "@/ui/primitives";
 
 import { formatPrice } from "../lib";
 import { type Area, type Category, type Item, type Priority } from "../types";
 
-import { ItemActions, ItemLink } from "./item-actions";
+import { ItemLink } from "./item-actions";
 import { PriorityCell } from "./priority-cell";
 import { Tag } from "./tag";
 
@@ -15,10 +17,9 @@ type ItemGridProps = {
   areas: Area[];
   categories: Category[];
   emptyMessage: string;
-  onEdit: (id: string) => void;
+  onOpen: (id: string) => void;
   onToggleStatus: (item: Item) => void;
   onChangePriority: (id: string, priority: Priority) => void;
-  onDelete: (id: string) => void;
 };
 
 export function ItemGrid({
@@ -26,10 +27,9 @@ export function ItemGrid({
   areas,
   categories,
   emptyMessage,
-  onEdit,
+  onOpen,
   onToggleStatus,
   onChangePriority,
-  onDelete,
 }: ItemGridProps) {
   if (items.length === 0) {
     return <p className="text-ink-soft px-0.5 pt-2 pb-5 text-sm">{emptyMessage}</p>;
@@ -44,11 +44,17 @@ export function ItemGrid({
       {items.map((item) => {
         const purchased = item.status === "purchased";
 
+        function handleCardClick(event: MouseEvent<HTMLElement>) {
+          if ((event.target as HTMLElement).closest("button, a, input, label")) return;
+          onOpen(item.id);
+        }
+
         return (
           <article
             key={item.id}
+            onClick={handleCardClick}
             className={cn(
-              "bg-surface shadow-control flex min-h-36 flex-col rounded-[8px] p-3.5",
+              "bg-surface shadow-control hover:bg-surface-alt hover:shadow-control-hover flex min-h-36 cursor-pointer flex-col rounded-[8px] p-3.5 transition-[background-color,box-shadow] duration-100",
               purchased && "opacity-55",
             )}
           >
@@ -61,12 +67,17 @@ export function ItemGrid({
                 indicatorClassName="mt-0.5 size-5 [&_svg]:size-3"
               />
               <div className="min-w-0 flex-1">
-                <h3 className="font-semibold">{item.name}</h3>
-                {item.note ? (
-                  <p className="text-ink-soft mt-0.5 text-xs italic">{item.note}</p>
-                ) : null}
+                <h3>
+                  <button
+                    type="button"
+                    title={item.note ?? undefined}
+                    onClick={() => onOpen(item.id)}
+                    className="hover:text-accent focus-visible:text-accent cursor-pointer text-left font-semibold focus-visible:outline-none"
+                  >
+                    {item.name}
+                  </button>
+                </h3>
               </div>
-              <ItemActions item={item} onEdit={onEdit} onDelete={onDelete} />
             </div>
 
             <div className="mt-3 flex flex-wrap items-center gap-1.5">

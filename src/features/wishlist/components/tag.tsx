@@ -3,7 +3,7 @@ import { type ComponentPropsWithRef } from "react";
 import { cn } from "@/shared/lib/cn";
 
 const baseClassName =
-  "shadow-tag inline-block whitespace-nowrap rounded-[0.35em] px-[0.6em] py-[0.15em] text-xs leading-4 font-semibold";
+  "shadow-tag inline-flex min-h-6 min-w-6 items-center justify-center whitespace-nowrap rounded-[5px] px-2 py-1 text-xs leading-none font-semibold";
 
 export function Tag({ className, ...props }: ComponentPropsWithRef<"span">) {
   return <span className={cn(baseClassName, className)} {...props} />;

@@ -24,6 +24,7 @@ type SelectProps = {
   "aria-label"?: string;
   className?: string;
   wrapperClassName?: string;
+  compact?: boolean;
 };
 
 /**
@@ -43,6 +44,7 @@ export function Select({
   "aria-label": ariaLabel,
   className,
   wrapperClassName,
+  compact = false,
 }: SelectProps) {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -144,19 +146,30 @@ export function Select({
         onKeyDown={onKeyDown}
         className={cn(
           fieldClassName,
-          "flex cursor-pointer items-center gap-2.5 pr-3.5 text-left",
           className,
+          "group/select grid cursor-pointer grid-cols-[minmax(0,1fr)_auto] p-0 text-left",
         )}
       >
-        <span className={cn("min-w-0 flex-1 truncate", showingPlaceholder && "text-ink-soft")}>
+        <span
+          className={cn(
+            "min-w-0 truncate px-3.5",
+            compact ? "py-2" : "py-2.5",
+            showingPlaceholder && "text-ink-soft",
+          )}
+        >
           {showingPlaceholder ? placeholder : selected.label}
         </span>
-        <ChevronDownIcon
+        <span
           className={cn(
-            "text-ink-soft shrink-0 transition-transform duration-100",
-            open && "rotate-180",
+            "border-line text-ink-soft group-hover/select:text-accent flex items-center justify-center self-stretch border-l transition-[background-color,color] duration-100",
+            compact ? "w-9" : "w-[43px]",
+            open && "text-accent",
           )}
-        />
+        >
+          <ChevronDownIcon
+            className={cn("transition-transform duration-100", open && "rotate-180")}
+          />
+        </span>
       </button>
 
       {open ? (

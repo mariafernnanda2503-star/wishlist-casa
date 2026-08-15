@@ -24,8 +24,8 @@ export function SignOutButton() {
       type="button"
       onClick={onSignOut}
       disabled={signingOut}
-      variant="danger"
-      className="inline-flex items-center gap-2 text-[13px]"
+      variant="secondary"
+      className="text-danger hover:text-danger inline-flex items-center gap-2 text-[13px]"
     >
       <LogOutIcon className="size-[15px]" />
       {signingOut ? "Saindo..." : "Sair"}

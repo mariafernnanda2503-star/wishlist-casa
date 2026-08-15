@@ -76,6 +76,15 @@ export function ChevronDownIcon(props: IconProps) {
   );
 }
 
+export function SortIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path className="sort-up" d="m7 10 5-5 5 5" />
+      <path className="sort-down" d="m7 14 5 5 5-5" />
+    </Icon>
+  );
+}
+
 export function XIcon(props: IconProps) {
   return (
     <Icon {...props}>

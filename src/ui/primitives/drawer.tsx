@@ -11,6 +11,7 @@ type DrawerProps = {
   onClose: () => void;
   children: ReactNode;
   footer?: ReactNode;
+  navigation?: ReactNode;
 };
 
 export function Drawer({
@@ -20,6 +21,7 @@ export function Drawer({
   onClose,
   children,
   footer,
+  navigation,
 }: DrawerProps) {
   const drawerRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -39,7 +41,7 @@ export function Drawer({
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
-      className="backdrop:bg-ink/40 m-0 ml-auto h-dvh w-[min(540px,calc(100%-24px))] max-w-none overflow-visible border-none bg-transparent p-0 backdrop:backdrop-blur-[2px] max-sm:mt-auto max-sm:ml-0 max-sm:h-[min(90dvh,780px)] max-sm:w-full"
+      className="backdrop:bg-ink/40 m-0 ml-auto h-dvh w-[min(600px,calc(100%-24px))] max-w-none overflow-visible border-none bg-transparent p-0 backdrop:backdrop-blur-[2px] max-sm:mt-auto max-sm:ml-0 max-sm:h-[min(90dvh,780px)] max-sm:w-full"
     >
       <div className="drawer-panel border-line bg-surface shadow-popover flex h-full min-h-0 flex-col overflow-hidden rounded-l-[6px] border-l max-sm:rounded-t-[16px] max-sm:rounded-b-none max-sm:border-t max-sm:border-l-0">
         <div
@@ -68,8 +70,22 @@ export function Drawer({
           </button>
         </header>
 
-        <div className="scrollbar-themed min-h-0 flex-1 overflow-y-auto px-6 py-5 max-sm:px-4 max-sm:py-4">
-          {children}
+        {navigation ? (
+          <div className="border-line bg-surface-alt flex shrink-0 justify-center border-b px-4 py-2 sm:hidden">
+            {navigation}
+          </div>
+        ) : null}
+
+        <div className="flex min-h-0 flex-1">
+          <div className="scrollbar-themed min-w-0 flex-1 overflow-y-auto px-6 py-5 max-sm:px-4 max-sm:py-4">
+            {children}
+          </div>
+
+          {navigation ? (
+            <aside className="border-line bg-surface-alt hidden w-14 shrink-0 items-start justify-center border-l px-2 py-3 sm:flex">
+              {navigation}
+            </aside>
+          ) : null}
         </div>
 
         {footer ? (

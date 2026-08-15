@@ -6,7 +6,9 @@ import { type Database } from "@/shared/types/database";
 
 // `/nova-senha` fica de fora: quem chega lá já tem sessão, criada pelo
 // `/auth/callback` ao trocar o código do link de recuperação.
-const PUBLIC_ROUTES = ["/login", "/esqueci-senha", "/auth"];
+// `/convite` entra aqui porque a tela mostra de quem é o convite antes do
+// login — quem recebeu o link precisa saber onde está entrando.
+const PUBLIC_ROUTES = ["/login", "/esqueci-senha", "/auth", "/convite"];
 
 /**
  * Renova a sessão a cada request e barra quem não está logado. Chamado pelo

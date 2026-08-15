@@ -17,8 +17,9 @@ import {
 } from "../types";
 
 /** Colunas de `items` escritas a partir de um `ItemDraft`. */
-function toRow(draft: ItemDraft) {
+function toRow(draft: ItemDraft, listId: string) {
   return {
+    list_id: listId,
     name: draft.name,
     price: draft.price,
     price_target: draft.priceTarget,
@@ -31,7 +32,7 @@ function toRow(draft: ItemDraft) {
   };
 }
 
-export function useWishlist(initialData: WishlistData) {
+export function useWishlist(initialData: WishlistData, listId: string, workspaceId: string) {
   const supabase = useMemo(() => createClient(), []);
 
   const [items, setItems] = useState<Item[]>(initialData.items);
@@ -39,9 +40,25 @@ export function useWishlist(initialData: WishlistData) {
   const [types, setTypes] = useState<ItemType[]>(initialData.types);
   const reload = useCallback(async () => {
     const [groupsRes, typesRes, itemsRes] = await Promise.all([
-      supabase.from("item_groups").select("*").order("sort_order"),
-      supabase.from("item_types").select("*").order("sort_order"),
-      supabase.from("items").select("*").order("status").order("created_at", { ascending: false }),
+      supabase
+        .from("item_groups")
+        .select("*")
+        .eq("workspace_id", workspaceId)
+        .is("archived_at", null)
+        .order("sort_order"),
+      supabase
+        .from("item_types")
+        .select("*")
+        .eq("workspace_id", workspaceId)
+        .is("archived_at", null)
+        .order("sort_order"),
+      supabase
+        .from("items")
+        .select("*")
+        .eq("list_id", listId)
+        .is("deleted_at", null)
+        .order("status")
+        .order("created_at", { ascending: false }),
     ]);
 
     if (groupsRes.error || typesRes.error || itemsRes.error) {
@@ -57,7 +74,7 @@ export function useWishlist(initialData: WishlistData) {
     setItems(itemsRes.data as Item[]);
     logger.info("wishlist.reload_succeeded", { itemCount: itemsRes.data.length });
     return true;
-  }, [supabase]);
+  }, [supabase, listId, workspaceId]);
 
   // Mantém a lista em sincronia entre dispositivos sem refresh.
   useEffect(() => {
@@ -94,7 +111,7 @@ export function useWishlist(initialData: WishlistData) {
         groups.reduce((highest, group) => Math.max(highest, group.sort_order), 0) + 1;
       const { data, error: insertError } = await supabase
         .from("item_groups")
-        .insert({ name, sort_order: sortOrder })
+        .insert({ name, sort_order: sortOrder, workspace_id: workspaceId })
         .select()
         .single();
 
@@ -115,7 +132,7 @@ export function useWishlist(initialData: WishlistData) {
       });
       return data.id;
     },
-    [groups, supabase],
+    [groups, supabase, workspaceId],
   );
 
   const createType = useCallback(
@@ -127,7 +144,7 @@ export function useWishlist(initialData: WishlistData) {
       const sortOrder = types.reduce((highest, type) => Math.max(highest, type.sort_order), 0) + 1;
       const { data, error: insertError } = await supabase
         .from("item_types")
-        .insert({ name, sort_order: sortOrder })
+        .insert({ name, sort_order: sortOrder, workspace_id: workspaceId })
         .select()
         .single();
 
@@ -148,12 +165,12 @@ export function useWishlist(initialData: WishlistData) {
       });
       return data.id;
     },
-    [types, supabase],
+    [types, supabase, workspaceId],
   );
 
   const addItem = useCallback(
     async (draft: ItemDraft) => {
-      const { error: insertError } = await supabase.from("items").insert(toRow(draft));
+      const { error: insertError } = await supabase.from("items").insert(toRow(draft, listId));
       if (insertError) {
         feedback.error("Não consegui adicionar o item.", {
           event: "wishlist.item_add_failed",
@@ -166,12 +183,15 @@ export function useWishlist(initialData: WishlistData) {
       }
       return true;
     },
-    [supabase, reload],
+    [supabase, reload, listId],
   );
 
   const updateItem = useCallback(
     async (id: string, draft: ItemDraft) => {
-      const { error: updateError } = await supabase.from("items").update(toRow(draft)).eq("id", id);
+      const { error: updateError } = await supabase
+        .from("items")
+        .update(toRow(draft, listId))
+        .eq("id", id);
       if (updateError) {
         feedback.error("Não consegui salvar as alterações.", {
           event: "wishlist.item_update_failed",
@@ -188,7 +208,7 @@ export function useWishlist(initialData: WishlistData) {
       }
       return true;
     },
-    [supabase, reload],
+    [supabase, reload, listId],
   );
 
   const toggleStatus = useCallback(

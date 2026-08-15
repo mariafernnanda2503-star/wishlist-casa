@@ -4,17 +4,21 @@ import { useMemo, useState, type KeyboardEvent } from "react";
 
 import { SignOutButton } from "@/features/auth/components";
 import { cn } from "@/shared/lib/cn";
+import { UsersIcon } from "@/ui/icons";
+import { Button } from "@/ui/primitives";
 
 import { useWishlist } from "../hooks";
 import { ALL, computeTotals, isAcquired, normalizeText, PRIORITY_ORDER } from "../lib";
 import { type SharedDraft } from "../lib";
-import { type Item, type Priority, type WishlistData } from "../types";
+import { type Item, type Priority, type WishlistData, type WorkspaceContext } from "../types";
 
 import { AddItemPanel, type ViewMode } from "./add-item-panel";
 import { FiltersBar, type Filters } from "./filters-bar";
 import { ItemDetailsDrawer } from "./item-details-drawer";
 import { ItemGrid } from "./item-grid";
 import { ItemTable } from "./item-table";
+import { ListSwitcher } from "./list-switcher";
+import { MembersDialog } from "./members-dialog";
 import { Tag } from "./tag";
 import { TotalsPanel } from "./totals-panel";
 
@@ -23,12 +27,18 @@ type ListTab = "shopping" | "purchased";
 
 type WishlistPageProps = {
   initialData: WishlistData;
+  context: WorkspaceContext;
   currentUserId: string;
   /** Veio de um compartilhamento — abre o cadastro já preenchido. */
   sharedDraft: SharedDraft | null;
 };
 
-export function WishlistPage({ initialData, currentUserId, sharedDraft }: WishlistPageProps) {
+export function WishlistPage({
+  initialData,
+  context,
+  currentUserId,
+  sharedDraft,
+}: WishlistPageProps) {
   const {
     items,
     groups,
@@ -40,12 +50,13 @@ export function WishlistPage({ initialData, currentUserId, sharedDraft }: Wishli
     toggleStatus,
     updatePriority,
     deleteItem,
-  } = useWishlist(initialData);
+  } = useWishlist(initialData, context.activeList.id, context.activeWorkspace.id);
 
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("table");
   const [activeTab, setActiveTab] = useState<ListTab>("shopping");
+  const [membersOpen, setMembersOpen] = useState(false);
 
   const visibleItems = useMemo(() => {
     const search = normalizeText(filters.search.trim());
@@ -117,17 +128,36 @@ export function WishlistPage({ initialData, currentUserId, sharedDraft }: Wishli
       <header className="bg-surface shadow-control mb-4 flex items-center justify-between gap-3 rounded-[10px] px-4 py-3 max-sm:px-3 max-sm:py-2.5">
         <nav aria-label="Navegação estrutural" className="min-w-0">
           <ol className="flex items-center gap-2 text-sm max-sm:gap-1.5 max-sm:text-[13px]">
-            <li className="text-ink-soft max-[359px]:hidden">Casa</li>
+            <li className="text-ink-soft max-[359px]:hidden">{context.activeWorkspace.name}</li>
             <li aria-hidden="true" className="text-line font-semibold max-[359px]:hidden">
               /
             </li>
             <li className="min-w-0">
-              <h1 className="text-ink truncate font-semibold">Lista de desejos</h1>
+              <ListSwitcher context={context} />
             </li>
           </ol>
         </nav>
-        <SignOutButton />
+        <div className="flex shrink-0 items-center gap-2">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setMembersOpen(true)}
+            className="inline-flex items-center gap-2 text-[13px] max-sm:min-h-10"
+          >
+            <UsersIcon className="size-[15px]" />
+            <span className="max-sm:hidden">Participantes</span>
+          </Button>
+          <SignOutButton />
+        </div>
       </header>
+
+      {membersOpen ? (
+        <MembersDialog
+          context={context}
+          currentUserId={currentUserId}
+          onClose={() => setMembersOpen(false)}
+        />
+      ) : null}
 
       <TotalsPanel totals={totals} />
 

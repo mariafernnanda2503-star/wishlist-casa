@@ -111,6 +111,33 @@ export function usePriceHistory(itemId: string, target: number | null) {
     [supabase, itemId, load],
   );
 
+  const updateCheck = useCallback(
+    async (check: PriceCheck, price: number, store: string | null) => {
+      const { error } = await supabase
+        .from("price_checks")
+        .update({ price, store })
+        .eq("id", check.id)
+        .eq("item_id", itemId);
+
+      if (error) {
+        feedback.error("Não consegui atualizar o registro.", {
+          event: "price_history.update_failed",
+          error,
+          context: { itemId, checkId: check.id },
+        });
+        return false;
+      }
+
+      await load();
+      feedback.success("Registro atualizado.", {
+        event: "price_history.update_succeeded",
+        context: { itemId, checkId: check.id },
+      });
+      return true;
+    },
+    [supabase, itemId, load],
+  );
+
   const removeCheck = useCallback(
     async (checkId: string) => {
       const { error } = await supabase.from("price_checks").delete().eq("id", checkId);
@@ -121,15 +148,20 @@ export function usePriceHistory(itemId: string, target: number | null) {
           error,
           context: { itemId, checkId },
         });
-        return;
+        return false;
       }
 
       await load();
+      feedback.success("Registro removido.", {
+        event: "price_history.remove_succeeded",
+        context: { itemId, checkId },
+      });
+      return true;
     },
     [supabase, itemId, load],
   );
 
   const summary = useMemo(() => summarize(checks ?? [], target), [checks, target]);
 
-  return { checks, summary, addCheck, removeCheck };
+  return { checks, summary, addCheck, updateCheck, removeCheck };
 }

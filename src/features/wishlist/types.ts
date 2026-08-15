@@ -4,6 +4,18 @@ type Tables = Database["public"]["Tables"];
 
 export type Group = Tables["item_groups"]["Row"];
 export type ItemType = Tables["item_types"]["Row"];
+export type Workspace = Tables["workspaces"]["Row"];
+export type List = Tables["lists"]["Row"];
+
+/** Onde a pessoa está: o workspace ativo, suas listas e a lista aberta. */
+export type WorkspaceContext = {
+  workspaces: Workspace[];
+  activeWorkspace: Workspace;
+  lists: List[];
+  activeList: List;
+  /** `owner` pode gerenciar participantes e apagar o workspace. */
+  role: "owner" | "member";
+};
 
 export type Priority = "alta" | "media" | "baixa";
 

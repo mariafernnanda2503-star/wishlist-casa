@@ -56,20 +56,31 @@ export type Database = {
           id: string
           name: string
           sort_order: number
+          workspace_id: string
         }
         Insert: {
           archived_at?: string | null
           id?: string
           name: string
           sort_order?: number
+          workspace_id: string
         }
         Update: {
           archived_at?: string | null
           id?: string
           name?: string
           sort_order?: number
+          workspace_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "item_groups_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       item_types: {
         Row: {
@@ -77,20 +88,31 @@ export type Database = {
           id: string
           name: string
           sort_order: number
+          workspace_id: string
         }
         Insert: {
           archived_at?: string | null
           id?: string
           name: string
           sort_order?: number
+          workspace_id: string
         }
         Update: {
           archived_at?: string | null
           id?: string
           name?: string
           sort_order?: number
+          workspace_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "item_types_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       items: {
         Row: {
@@ -103,6 +125,7 @@ export type Database = {
           id: string
           is_recurring: boolean
           link: string | null
+          list_id: string
           name: string
           note: string | null
           owned_at: string | null
@@ -131,6 +154,7 @@ export type Database = {
           id?: string
           is_recurring?: boolean
           link?: string | null
+          list_id: string
           name: string
           note?: string | null
           owned_at?: string | null
@@ -159,6 +183,7 @@ export type Database = {
           id?: string
           is_recurring?: boolean
           link?: string | null
+          list_id?: string
           name?: string
           note?: string | null
           owned_at?: string | null
@@ -186,10 +211,55 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "items_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "lists"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "items_type_id_fkey"
             columns: ["type_id"]
             isOneToOne: false
             referencedRelation: "item_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lists: {
+        Row: {
+          archived_at: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          archived_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          archived_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lists_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]
@@ -256,6 +326,113 @@ export type Database = {
         }
         Relationships: []
       }
+      workspace_invites: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          created_by: string | null
+          expires_at: string
+          id: string
+          invited_email: string | null
+          role: string
+          token: string
+          workspace_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          invited_email?: string | null
+          role?: string
+          token?: string
+          workspace_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          invited_email?: string | null
+          role?: string
+          token?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_invites_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspace_members: {
+        Row: {
+          created_at: string
+          role: string
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          role?: string
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          role?: string
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_members_profile_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workspace_members_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspaces: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       item_price_summary: {
@@ -277,7 +454,17 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      accept_workspace_invite: {
+        Args: { invite_token: string }
+        Returns: string
+      }
+      peek_workspace_invite: {
+        Args: { invite_token: string }
+        Returns: {
+          is_valid: boolean
+          workspace_name: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

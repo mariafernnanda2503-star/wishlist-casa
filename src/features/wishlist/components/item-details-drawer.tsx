@@ -5,21 +5,27 @@ import { useState } from "react";
 import { LinkIcon, PencilIcon, TrashIcon } from "@/ui/icons";
 import { Button, Drawer } from "@/ui/primitives";
 
-import { formatPrice, priceToInput, PRIORITY_LABEL, PRIORITY_TAG_CLASS } from "../lib";
+import { formatPrice, isAcquired, priceToInput, PRIORITY_LABEL, PRIORITY_TAG_CLASS } from "../lib";
 import { type ItemFormValues } from "../schemas";
-import { type Area, type Category, type Item, type ItemDraft } from "../types";
+import { type Group, type ItemType, type Item, type ItemDraft, type Profile } from "../types";
 
 import { ItemForm } from "./item-form";
+import { ItemTimeline } from "./item-timeline";
+import { PriceHistorySection } from "./price-history-section";
 import { Tag } from "./tag";
 
 type ItemDetailsDrawerProps = {
   item: Item;
-  areas: Area[];
-  categories: Category[];
-  areaName: string;
-  categoryName: string;
+  groups: Group[];
+  types: ItemType[];
+  groupName: string;
+  typeName: string;
+  profiles: Profile[];
+  currentUserId: string;
   onClose: () => void;
   onSave: (id: string, draft: ItemDraft) => Promise<boolean>;
+  onCreateGroup: (name: string) => Promise<string | null>;
+  onCreateType: (name: string) => Promise<string | null>;
   onDelete: () => void;
 };
 
@@ -30,27 +36,33 @@ function toFormValues(item: Item): ItemFormValues {
   return {
     name: item.name,
     price: priceToInput(item.price),
+    priceTarget: priceToInput(item.price_target),
     quantity: String(item.quantity),
     priority: item.priority,
     link: item.link ?? "",
     note: item.note ?? "",
-    areaId: item.area_id ?? "",
-    categoryId: item.category_id ?? "",
+    groupId: item.group_id ?? "",
+    typeId: item.type_id ?? "",
   };
 }
 
 export function ItemDetailsDrawer({
   item,
-  areas,
-  categories,
-  areaName,
-  categoryName,
+  groups,
+  types,
+  groupName,
+  typeName,
+  profiles,
+  currentUserId,
   onClose,
   onSave,
+  onCreateGroup,
+  onCreateType,
   onDelete,
 }: ItemDetailsDrawerProps) {
   const [editing, setEditing] = useState(false);
-  const purchased = item.status === "purchased";
+  const [timelineVersion, setTimelineVersion] = useState(0);
+  const purchased = isAcquired(item.status);
 
   async function handleSave(draft: ItemDraft) {
     const saved = await onSave(item.id, draft);
@@ -70,7 +82,7 @@ export function ItemDetailsDrawer({
               type="button"
               variant="secondary"
               onClick={() => setEditing(true)}
-              className="text-edit hover:text-edit inline-flex flex-1 items-center justify-center gap-2"
+              className="text-edit hover:text-edit inline-flex items-center justify-center gap-2 max-sm:flex-1 sm:min-w-28"
             >
               <PencilIcon />
               Editar
@@ -79,7 +91,7 @@ export function ItemDetailsDrawer({
               type="button"
               variant="secondary"
               onClick={onDelete}
-              className="text-danger hover:text-danger inline-flex flex-1 items-center justify-center gap-2"
+              className="text-danger hover:text-danger inline-flex items-center justify-center gap-2 max-sm:flex-1 sm:min-w-28"
             >
               <TrashIcon />
               Excluir
@@ -90,87 +102,105 @@ export function ItemDetailsDrawer({
     >
       {editing ? (
         <ItemForm
-          areas={areas}
-          categories={categories}
+          groups={groups}
+          types={types}
           initialValues={toFormValues(item)}
           submitLabel="Salvar alterações"
           focusNameOnMount
           onCancel={() => setEditing(false)}
           onSubmit={handleSave}
+          onCreateGroup={onCreateGroup}
+          onCreateType={onCreateType}
         />
       ) : (
-        <div className="space-y-4">
-          <section className="bg-surface-alt shadow-control flex items-end justify-between gap-4 rounded-[8px] px-4 py-3.5">
-            <div>
-              <span className={DETAIL_LABEL}>Preço médio</span>
-              <strong className="text-accent text-2xl font-semibold tabular-nums">
-                {formatPrice(item.price)}
-              </strong>
-            </div>
-            <div className="text-right">
-              <span className={DETAIL_LABEL}>Quantidade</span>
-              <strong className="text-lg font-semibold tabular-nums">{item.quantity}</strong>
-            </div>
-          </section>
-
-          <dl className="grid grid-cols-2 gap-3">
-            <div className="border-line border-b pb-3">
-              <dt className={DETAIL_LABEL}>Status</dt>
-              <dd>
-                <Tag
-                  className={
-                    purchased
-                      ? "bg-accent-soft text-accent"
-                      : "bg-priority-media-soft text-priority-media"
-                  }
-                >
-                  {purchased ? "Comprado" : "Pendente"}
-                </Tag>
-              </dd>
-            </div>
-            <div className="border-line border-b pb-3">
-              <dt className={DETAIL_LABEL}>Prioridade</dt>
-              <dd>
-                <Tag className={PRIORITY_TAG_CLASS[item.priority]}>
-                  {PRIORITY_LABEL[item.priority]}
-                </Tag>
-              </dd>
-            </div>
-            <div className="border-line border-b pb-3">
-              <dt className={DETAIL_LABEL}>Área</dt>
-              <dd>
-                <Tag className="bg-accent-soft text-accent">{areaName}</Tag>
-              </dd>
-            </div>
-            <div className="border-line border-b pb-3">
-              <dt className={DETAIL_LABEL}>Categoria</dt>
-              <dd>
-                <Tag className="bg-category-soft text-category">{categoryName}</Tag>
-              </dd>
-            </div>
-          </dl>
-
-          <section>
-            <h3 className={DETAIL_LABEL}>Nota</h3>
-            <p className={item.note ? "text-sm leading-6" : "text-ink-soft text-sm"}>
-              {item.note ?? "Nenhuma nota adicionada."}
-            </p>
-          </section>
-
-          {item.link ? (
-            <section>
-              <h3 className={DETAIL_LABEL}>Link</h3>
-              <a
-                href={item.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-surface-alt text-accent shadow-control hover:bg-surface hover:shadow-control-hover focus-visible:shadow-control-focus inline-flex items-center gap-2 rounded-[6px] px-3 pt-2 pb-2.5 text-sm font-medium focus-visible:outline-none"
-              >
-                <LinkIcon />
-                Abrir página do produto
-              </a>
+        <div className="space-y-4 sm:space-y-5">
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,1.05fr)_minmax(220px,0.95fr)] sm:gap-4">
+            <section className="bg-surface-alt shadow-control flex min-h-28 items-end justify-between gap-4 rounded-[8px] px-4 py-3.5 sm:min-h-full sm:flex-col sm:items-start sm:justify-between sm:px-5 sm:py-4">
+              <div>
+                <span className={DETAIL_LABEL}>Preço estimado</span>
+                <strong className="text-accent text-2xl font-semibold tabular-nums sm:text-3xl">
+                  {formatPrice(item.price)}
+                </strong>
+              </div>
+              <div className="text-right sm:text-left">
+                <span className={DETAIL_LABEL}>Quantidade</span>
+                <strong className="text-lg font-semibold tabular-nums">{item.quantity}</strong>
+              </div>
             </section>
-          ) : null}
+
+            <dl className="bg-line shadow-control grid grid-cols-2 gap-px overflow-hidden rounded-[8px]">
+              <div className="bg-surface-alt px-3 py-2.5">
+                <dt className={DETAIL_LABEL}>Status</dt>
+                <dd>
+                  <Tag
+                    className={
+                      purchased
+                        ? "bg-accent-soft text-accent"
+                        : "bg-priority-media-soft text-priority-media"
+                    }
+                  >
+                    {purchased ? "Comprado" : "Pendente"}
+                  </Tag>
+                </dd>
+              </div>
+              <div className="bg-surface-alt px-3 py-2.5">
+                <dt className={DETAIL_LABEL}>Prioridade</dt>
+                <dd>
+                  <Tag className={PRIORITY_TAG_CLASS[item.priority]}>
+                    {PRIORITY_LABEL[item.priority]}
+                  </Tag>
+                </dd>
+              </div>
+              <div className="bg-surface-alt col-span-2 px-3 py-2.5">
+                <dt className={DETAIL_LABEL}>Grupo</dt>
+                <dd>
+                  <Tag className="bg-accent-soft text-accent">{groupName}</Tag>
+                </dd>
+              </div>
+              <div className="bg-surface-alt col-span-2 px-3 py-2.5">
+                <dt className={DETAIL_LABEL}>Tipo</dt>
+                <dd>
+                  <Tag className="bg-type-soft text-type">{typeName}</Tag>
+                </dd>
+              </div>
+            </dl>
+          </div>
+
+          <PriceHistorySection
+            item={item}
+            onRegistered={() => setTimelineVersion((current) => current + 1)}
+          />
+
+          <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+            <section className="min-w-0">
+              <h3 className={DETAIL_LABEL}>Nota</h3>
+              <p className={item.note ? "text-sm leading-6" : "text-ink-soft text-sm"}>
+                {item.note ?? "Nenhuma nota adicionada."}
+              </p>
+            </section>
+
+            {item.link ? (
+              <section>
+                <h3 className={DETAIL_LABEL}>Link</h3>
+                <a
+                  href={item.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-surface-alt text-accent shadow-control hover:bg-surface hover:shadow-control-hover focus-visible:shadow-control-focus inline-flex items-center justify-center gap-2 rounded-[6px] px-3 pt-2 pb-2.5 text-sm font-medium focus-visible:outline-none max-sm:w-full"
+                >
+                  <LinkIcon />
+                  Abrir página do produto
+                </a>
+              </section>
+            ) : null}
+          </div>
+
+          <ItemTimeline
+            itemId={item.id}
+            profiles={profiles}
+            currentUserId={currentUserId}
+            refreshKey={timelineVersion}
+          />
         </div>
       )}
     </Drawer>

@@ -1,4 +1,4 @@
-import { type Priority } from "../types";
+import { type Priority, type Status } from "../types";
 
 export const PRIORITY_ORDER: Record<Priority, number> = { alta: 0, media: 1, baixa: 2 };
 
@@ -25,5 +25,20 @@ export const PRIORITY_TAG_CLASS: Record<Priority, string> = {
 };
 
 export const DEFAULT_PRIORITY: Priority = "media";
+
+export const STATUS_LABEL: Record<Status, string> = {
+  wanted: "A comprar",
+  purchased: "Comprado",
+  owned: "Em casa",
+  archived: "Arquivado",
+};
+
+/**
+ * Já saiu do "a comprar", tendo chegado ou não. A distinção entre pago e
+ * recebido interessa ao detalhe do item, não à separação das abas.
+ */
+export function isAcquired(status: Status): boolean {
+  return status === "purchased" || status === "owned";
+}
 
 export const ALL = "all";

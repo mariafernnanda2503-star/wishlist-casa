@@ -15,6 +15,8 @@ const optionalUrl = z
 export const itemDraftSchema = z.object({
   name: z.string().trim().min(1, "Dê um nome ao item."),
   price: z.string().transform(parsePriceInput),
+  /** Faixa aceitável: "vale a pena abaixo disso". Opcional. */
+  priceTarget: z.string().transform(parsePriceInput),
   quantity: z.string().transform((value) => {
     const parsed = Number.parseInt(value, 10);
     return Number.isNaN(parsed) || parsed < 1 ? 1 : parsed;
@@ -22,8 +24,8 @@ export const itemDraftSchema = z.object({
   priority: z.enum(["alta", "media", "baixa"]),
   link: optionalUrl,
   note: z.string().transform(emptyToNull),
-  areaId: z.string().transform(emptyToNull),
-  categoryId: z.string().transform(emptyToNull),
+  groupId: z.string().transform(emptyToNull),
+  typeId: z.string().transform(emptyToNull),
 });
 
 export type ItemFormValues = z.input<typeof itemDraftSchema>;

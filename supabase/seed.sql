@@ -3,7 +3,7 @@
 
 -- ─── Listas fixas ─────────────────────────────────────────────────────────────
 
-insert into areas (name, sort_order) values
+insert into item_groups (name, sort_order) values
   ('Cozinha', 1),
   ('Banheiro', 2),
   ('Quarto', 3),
@@ -11,7 +11,7 @@ insert into areas (name, sort_order) values
   ('Casa (geral)', 5)
 on conflict (name) do nothing;
 
-insert into categories (name, sort_order) values
+insert into item_types (name, sort_order) values
   ('Utensílio', 1),
   ('Eletrodoméstico', 2),
   ('Organização', 3),
@@ -41,8 +41,8 @@ select
   d.note,
   d.status,
   case when d.status = 'purchased' then now() - (d.dias_atras || ' days')::interval end,
-  (select id from areas where name = d.area),
-  (select id from categories where name = d.categoria)
+  (select id from item_groups where name = d.area),
+  (select id from item_types where name = d.categoria)
 from (values
   -- nome, preço, qtd, prioridade, link, nota, status, dias atrás, área, categoria
   ('Air fryer 5L',                499.90::numeric(10,2), 1, 'alta',  'https://www.amazon.com.br/s?k=air+fryer+5l',        'esperar Black Friday',        'pending',   0, 'Cozinha',      'Eletrodoméstico'),

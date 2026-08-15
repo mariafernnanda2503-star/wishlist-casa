@@ -38,10 +38,10 @@
   --color-edit: hsl(215 58% 38%);
 
   /* Apoio ---------------------------------------------------------------
-     Categoria é a única matiz fora das três da marca: ela precisa se separar
+     Tipo é a única matiz fora das três da marca: ela precisa se separar
      da tag de área, que usa o jade. */
-  --color-category: hsl(265 45% 36%);
-  --color-category-soft: hsl(268 30% 93%);
+  --color-type: hsl(265 45% 36%);
+  --color-type-soft: hsl(268 30% 93%);
 
   --color-priority-alta: hsl(347 68% 43%); /* mesmo vermelho destrutivo */
   --color-priority-alta-soft: hsl(347 44% 94%);
@@ -366,6 +366,19 @@ body {
   color: var(--color-accent);
   background: var(--color-surface-alt);
   box-shadow: var(--shadow-control);
+}
+
+@media (max-width: 639px) {
+  .app-toaster {
+    right: 8px !important;
+    bottom: max(8px, env(safe-area-inset-bottom)) !important;
+    left: 8px !important;
+    width: auto !important;
+  }
+
+  .app-toaster [data-sonner-toast] {
+    width: 100%;
+  }
 }
 
 /* Entrada curta: o overshoot do tema (--anim-popup, 0.3s) é dimensionado para

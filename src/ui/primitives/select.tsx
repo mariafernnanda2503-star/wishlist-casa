@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 
 import { useFloatingMenu } from "@/shared/hooks/use-floating-menu";
 import { cn } from "@/shared/lib/cn";
-import { ChevronDownIcon } from "@/ui/icons";
+import { ChevronDownIcon, PlusIcon } from "@/ui/icons";
 
 import { fieldClassName } from "./input";
 
@@ -25,16 +25,18 @@ type SelectProps = {
   className?: string;
   wrapperClassName?: string;
   compact?: boolean;
+  /** Quando presente, o menu ganha busca e permite criar uma opção inexistente. */
+  onCreateOption?: (label: string) => Promise<string | null>;
 };
 
-/**
- * Gatilho + lista própria, no lugar do `<select>` nativo.
- *
- * O nativo mostra fechado o texto da opção selecionada, então um rótulo como
- * "Área" só apareceria fechado se também fosse uma opção escolhível — que era
- * exatamente o problema. Separando o gatilho da lista, o rótulo vive só no
- * gatilho, e a lista mostra apenas escolhas de verdade.
- */
+function normalize(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase();
+}
+
+/** Gatilho + lista própria, com criação opcional de valores. */
 export function Select({
   value,
   onChange,
@@ -45,10 +47,15 @@ export function Select({
   className,
   wrapperClassName,
   compact = false,
+  onCreateOption,
 }: SelectProps) {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [query, setQuery] = useState("");
+  const [creating, setCreating] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
   const listId = useId();
   const floatingStyle = useFloatingMenu({
     open,
@@ -58,6 +65,14 @@ export function Select({
 
   const selected = options.find((option) => option.value === value);
   const showingPlaceholder = value === emptyValue || !selected;
+  const normalizedQuery = normalize(query.trim());
+  const filteredOptions = normalizedQuery
+    ? options.filter((option) => normalize(option.label).includes(normalizedQuery))
+    : options;
+  const exactOption = normalizedQuery
+    ? options.find((option) => normalize(option.label) === normalizedQuery)
+    : undefined;
+  const canCreate = Boolean(onCreateOption && query.trim() && !exactOption);
 
   useEffect(() => {
     if (!open) return;
@@ -71,19 +86,42 @@ export function Select({
     return () => document.removeEventListener("mousedown", onPointerDown);
   }, [open]);
 
-  function choose(index: number) {
-    const option = options[index];
-    if (!option) return;
-    onChange(option.value);
+  useEffect(() => {
+    if (open && onCreateOption) searchRef.current?.focus();
+  }, [open, onCreateOption]);
+
+  function close({ restoreFocus = false } = {}) {
     setOpen(false);
+    setQuery("");
+    setActiveIndex(0);
+    if (restoreFocus) requestAnimationFrame(() => triggerRef.current?.focus());
+  }
+
+  function choose(option: SelectOption) {
+    onChange(option.value);
+    close();
   }
 
   function openAt(index: number) {
+    setQuery("");
     setActiveIndex(index);
     setOpen(true);
   }
 
-  function onKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
+  async function createOption() {
+    const label = query.trim();
+    if (!onCreateOption || !label || exactOption || creating) return;
+
+    setCreating(true);
+    const createdValue = await onCreateOption(label);
+    setCreating(false);
+
+    if (!createdValue) return;
+    onChange(createdValue);
+    close();
+  }
+
+  function onTriggerKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
     const selectedIndex = Math.max(
       0,
       options.findIndex((option) => option.value === value),
@@ -91,7 +129,7 @@ export function Select({
 
     switch (event.key) {
       case "Escape":
-        setOpen(false);
+        close();
         return;
       case "ArrowDown":
         event.preventDefault();
@@ -117,8 +155,34 @@ export function Select({
       case " ":
         event.preventDefault();
         if (!open) openAt(selectedIndex);
-        else choose(activeIndex);
+        else if (options[activeIndex]) choose(options[activeIndex]);
         return;
+      default:
+        return;
+    }
+  }
+
+  function onSearchKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    switch (event.key) {
+      case "Escape":
+        event.preventDefault();
+        close({ restoreFocus: true });
+        return;
+      case "ArrowDown":
+        event.preventDefault();
+        setActiveIndex((current) => Math.min(current + 1, filteredOptions.length - 1));
+        return;
+      case "ArrowUp":
+        event.preventDefault();
+        setActiveIndex((current) => Math.max(current - 1, 0));
+        return;
+      case "Enter": {
+        event.preventDefault();
+        const option = filteredOptions[activeIndex];
+        if (option) choose(option);
+        else if (canCreate) void createOption();
+        return;
+      }
       default:
         return;
     }
@@ -127,6 +191,7 @@ export function Select({
   return (
     <div ref={containerRef} className={cn("relative", wrapperClassName)}>
       <button
+        ref={triggerRef}
         type="button"
         role="combobox"
         aria-expanded={open}
@@ -134,7 +199,7 @@ export function Select({
         aria-haspopup="listbox"
         aria-label={ariaLabel}
         onClick={() => {
-          if (open) setOpen(false);
+          if (open) close();
           else
             openAt(
               Math.max(
@@ -143,7 +208,7 @@ export function Select({
               ),
             );
         }}
-        onKeyDown={onKeyDown}
+        onKeyDown={onTriggerKeyDown}
         className={cn(
           fieldClassName,
           className,
@@ -161,7 +226,7 @@ export function Select({
         </span>
         <span
           className={cn(
-            "border-line text-ink-soft group-hover/select:text-accent flex items-center justify-center self-stretch border-l transition-[background-color,color] duration-100",
+            "border-line text-ink-soft group-hover/select:text-accent flex items-center justify-center self-stretch border-l transition-colors duration-100",
             compact ? "w-9" : "w-[43px]",
             open && "text-accent",
           )}
@@ -174,29 +239,58 @@ export function Select({
 
       {open ? (
         <div
-          id={listId}
-          role="listbox"
-          aria-label={ariaLabel}
           style={floatingStyle}
           className="popover scrollbar-themed fixed z-50 overflow-y-auto overscroll-contain"
         >
-          {options.map((option, index) => (
+          {onCreateOption ? (
+            <div className="border-line mb-1 border-b p-1 pb-2">
+              <input
+                ref={searchRef}
+                type="text"
+                value={query}
+                onChange={(event) => {
+                  setQuery(event.target.value);
+                  setActiveIndex(0);
+                }}
+                onKeyDown={onSearchKeyDown}
+                placeholder="Buscar ou adicionar..."
+                aria-label={`Buscar ou adicionar ${ariaLabel?.toLowerCase() ?? "opção"}`}
+                className="bg-surface text-ink shadow-control focus:shadow-control-focus w-full rounded-[6px] px-2.5 py-2 text-[13px] outline-none"
+              />
+            </div>
+          ) : null}
+
+          <div id={listId} role="listbox" aria-label={ariaLabel}>
+            {filteredOptions.map((option, index) => (
+              <button
+                key={option.value}
+                type="button"
+                role="option"
+                aria-selected={option.value === value}
+                onMouseEnter={() => setActiveIndex(index)}
+                onClick={() => choose(option)}
+                className={cn(
+                  "popover-item truncate",
+                  index === activeIndex && "bg-surface",
+                  option.value === value && "text-accent font-semibold",
+                )}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+
+          {canCreate ? (
             <button
-              key={option.value}
               type="button"
-              role="option"
-              aria-selected={option.value === value}
-              onMouseEnter={() => setActiveIndex(index)}
-              onClick={() => choose(index)}
-              className={cn(
-                "popover-item truncate",
-                index === activeIndex && "bg-surface",
-                option.value === value && "text-accent font-semibold",
-              )}
+              disabled={creating}
+              onClick={() => void createOption()}
+              className="border-line text-accent hover:bg-surface focus-visible:bg-surface mt-1 flex w-full cursor-pointer items-center gap-2 border-t px-3 pt-2.5 pb-2 text-left text-[13px] font-semibold outline-none disabled:pointer-events-none disabled:opacity-60"
             >
-              {option.label}
+              <PlusIcon className="size-3.5" />
+              {creating ? "Adicionando..." : `Adicionar “${query.trim()}”`}
             </button>
-          ))}
+          ) : null}
         </div>
       ) : null}
     </div>

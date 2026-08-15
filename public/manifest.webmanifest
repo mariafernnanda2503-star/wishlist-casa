@@ -1,0 +1,28 @@
+{
+  "name": "Wishlist da Casa",
+  "short_name": "Wishlist",
+  "description": "Lista de desejos compartilhada.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#E4EAE8",
+  "theme_color": "#347958",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "share_target": {
+    "action": "/",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
+}

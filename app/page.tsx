@@ -1,10 +1,16 @@
 import { redirect } from "next/navigation";
 
 import { WishlistPage } from "@/features/wishlist/components";
+import { parseSharedInput } from "@/features/wishlist/lib";
 import { getWishlistData } from "@/features/wishlist/queries";
 import { createClient } from "@/shared/lib/supabase/server";
 
-export default async function Home() {
+type HomeProps = {
+  /** Preenchidos pelo compartilhamento do Android (ver public/manifest.webmanifest). */
+  searchParams: Promise<{ title?: string; text?: string; url?: string }>;
+};
+
+export default async function Home({ searchParams }: HomeProps) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -26,5 +32,7 @@ export default async function Home() {
     );
   }
 
-  return <WishlistPage initialData={data} />;
+  const sharedDraft = parseSharedInput(await searchParams);
+
+  return <WishlistPage initialData={data} currentUserId={user.id} sharedDraft={sharedDraft} />;
 }

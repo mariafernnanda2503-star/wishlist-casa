@@ -6,28 +6,36 @@ import { cn } from "@/shared/lib/cn";
 import { GridIcon, PlusIcon, TableIcon } from "@/ui/icons";
 import { Button, Dialog } from "@/ui/primitives";
 
-import { type Area, type Category, type ItemDraft } from "../types";
+import { type SharedDraft } from "../lib";
+import { type Group, type ItemType, type ItemDraft } from "../types";
 
-import { ItemForm } from "./item-form";
+import { EMPTY_ITEM_FORM, ItemForm } from "./item-form";
 
 export type ViewMode = "table" | "grid";
 
 type AddItemPanelProps = {
-  areas: Area[];
-  categories: Category[];
+  groups: Group[];
+  types: ItemType[];
   onAdd: (draft: ItemDraft) => Promise<boolean>;
+  onCreateGroup: (name: string) => Promise<string | null>;
+  onCreateType: (name: string) => Promise<string | null>;
   viewMode: ViewMode;
   onViewModeChange: (viewMode: ViewMode) => void;
+  sharedDraft: SharedDraft | null;
 };
 
 export function AddItemPanel({
-  areas,
-  categories,
+  groups,
+  types,
   onAdd,
+  onCreateGroup,
+  onCreateType,
   viewMode,
   onViewModeChange,
+  sharedDraft,
 }: AddItemPanelProps) {
-  const [open, setOpen] = useState(false);
+  // Chegou por compartilhamento: o cadastro já nasce aberto e preenchido.
+  const [open, setOpen] = useState(sharedDraft !== null);
 
   async function handleAdd(draft: ItemDraft) {
     const added = await onAdd(draft);
@@ -36,13 +44,13 @@ export function AddItemPanel({
 
   return (
     <div className="mb-4">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-2.5">
         <Button
           type="button"
           aria-expanded={open}
           aria-haspopup="dialog"
           onClick={() => setOpen(true)}
-          className="inline-flex items-center justify-center gap-2 text-[15px]"
+          className="inline-flex items-center justify-center gap-2 text-[15px] max-sm:min-h-10"
         >
           <PlusIcon />
           Adicionar item
@@ -56,7 +64,7 @@ export function AddItemPanel({
             aria-pressed={viewMode === "table"}
             onClick={() => onViewModeChange("table")}
             className={cn(
-              "bg-surface shadow-control hover:bg-surface-alt hover:shadow-control-hover focus-visible:shadow-control-focus active:shadow-control-active inline-flex size-9 cursor-pointer items-center justify-center rounded-[7px] border transition-[background-color,color,box-shadow] duration-100 focus-visible:outline-none",
+              "bg-surface shadow-control hover:bg-surface-alt hover:shadow-control-hover focus-visible:shadow-control-focus active:shadow-control-active inline-flex size-9 cursor-pointer items-center justify-center rounded-[7px] border transition-[background-color,color,box-shadow] duration-100 focus-visible:outline-none max-sm:size-10",
               viewMode === "table"
                 ? "border-accent text-accent"
                 : "text-ink-soft hover:text-ink border-transparent",
@@ -71,7 +79,7 @@ export function AddItemPanel({
             aria-pressed={viewMode === "grid"}
             onClick={() => onViewModeChange("grid")}
             className={cn(
-              "bg-surface shadow-control hover:bg-surface-alt hover:shadow-control-hover focus-visible:shadow-control-focus active:shadow-control-active inline-flex size-9 cursor-pointer items-center justify-center rounded-[7px] border transition-[background-color,color,box-shadow] duration-100 focus-visible:outline-none",
+              "bg-surface shadow-control hover:bg-surface-alt hover:shadow-control-hover focus-visible:shadow-control-focus active:shadow-control-active inline-flex size-9 cursor-pointer items-center justify-center rounded-[7px] border transition-[background-color,color,box-shadow] duration-100 focus-visible:outline-none max-sm:size-10",
               viewMode === "grid"
                 ? "border-accent text-accent"
                 : "text-ink-soft hover:text-ink border-transparent",
@@ -90,12 +98,23 @@ export function AddItemPanel({
           onClose={() => setOpen(false)}
         >
           <ItemForm
-            areas={areas}
-            categories={categories}
+            groups={groups}
+            types={types}
+            initialValues={
+              sharedDraft
+                ? {
+                    ...EMPTY_ITEM_FORM,
+                    name: sharedDraft.name ?? "",
+                    link: sharedDraft.link ?? "",
+                  }
+                : undefined
+            }
             submitLabel="Adicionar"
             focusNameOnMount
             onCancel={() => setOpen(false)}
             onSubmit={handleAdd}
+            onCreateGroup={onCreateGroup}
+            onCreateType={onCreateType}
           />
         </Dialog>
       ) : null}

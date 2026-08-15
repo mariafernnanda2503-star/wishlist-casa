@@ -6,9 +6,10 @@ import { feedback } from "@/shared/lib/feedback";
 import { logger } from "@/shared/lib/logger";
 import { createClient } from "@/shared/lib/supabase/client";
 
+import { normalizeText } from "../lib";
 import {
-  type Area,
-  type Category,
+  type Group,
+  type ItemType,
   type Item,
   type ItemDraft,
   type Priority,
@@ -20,12 +21,13 @@ function toRow(draft: ItemDraft) {
   return {
     name: draft.name,
     price: draft.price,
+    price_target: draft.priceTarget,
     quantity: draft.quantity,
     priority: draft.priority,
     link: draft.link,
     note: draft.note,
-    area_id: draft.areaId,
-    category_id: draft.categoryId,
+    group_id: draft.groupId,
+    type_id: draft.typeId,
   };
 }
 
@@ -33,25 +35,25 @@ export function useWishlist(initialData: WishlistData) {
   const supabase = useMemo(() => createClient(), []);
 
   const [items, setItems] = useState<Item[]>(initialData.items);
-  const [areas, setAreas] = useState<Area[]>(initialData.areas);
-  const [categories, setCategories] = useState<Category[]>(initialData.categories);
+  const [groups, setGroups] = useState<Group[]>(initialData.groups);
+  const [types, setTypes] = useState<ItemType[]>(initialData.types);
   const reload = useCallback(async () => {
-    const [areasRes, categoriesRes, itemsRes] = await Promise.all([
-      supabase.from("areas").select("*").order("sort_order"),
-      supabase.from("categories").select("*").order("sort_order"),
+    const [groupsRes, typesRes, itemsRes] = await Promise.all([
+      supabase.from("item_groups").select("*").order("sort_order"),
+      supabase.from("item_types").select("*").order("sort_order"),
       supabase.from("items").select("*").order("status").order("created_at", { ascending: false }),
     ]);
 
-    if (areasRes.error || categoriesRes.error || itemsRes.error) {
+    if (groupsRes.error || typesRes.error || itemsRes.error) {
       feedback.error("Não consegui atualizar os dados. Recarregue a página.", {
         event: "wishlist.reload_failed",
-        error: areasRes.error ?? categoriesRes.error ?? itemsRes.error,
+        error: groupsRes.error ?? typesRes.error ?? itemsRes.error,
       });
       return false;
     }
 
-    setAreas(areasRes.data);
-    setCategories(categoriesRes.data);
+    setGroups(groupsRes.data);
+    setTypes(typesRes.data);
     setItems(itemsRes.data as Item[]);
     logger.info("wishlist.reload_succeeded", { itemCount: itemsRes.data.length });
     return true;
@@ -60,8 +62,14 @@ export function useWishlist(initialData: WishlistData) {
   // Mantém a lista em sincronia entre dispositivos sem refresh.
   useEffect(() => {
     const channel = supabase
-      .channel("items-changes")
+      .channel("wishlist-changes")
       .on("postgres_changes", { event: "*", schema: "public", table: "items" }, () => {
+        void reload();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "item_groups" }, () => {
+        void reload();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "item_types" }, () => {
         void reload();
       })
       .subscribe((status) => {
@@ -75,6 +83,73 @@ export function useWishlist(initialData: WishlistData) {
       void supabase.removeChannel(channel);
     };
   }, [supabase, reload]);
+
+  const createGroup = useCallback(
+    async (rawName: string) => {
+      const name = rawName.trim();
+      const existing = groups.find((group) => normalizeText(group.name) === normalizeText(name));
+      if (existing) return existing.id;
+
+      const sortOrder =
+        groups.reduce((highest, group) => Math.max(highest, group.sort_order), 0) + 1;
+      const { data, error: insertError } = await supabase
+        .from("item_groups")
+        .insert({ name, sort_order: sortOrder })
+        .select()
+        .single();
+
+      if (insertError) {
+        feedback.error("Não consegui adicionar o grupo.", {
+          event: "wishlist.group_add_failed",
+          error: insertError,
+        });
+        return null;
+      }
+
+      setGroups((current) =>
+        current.some((group) => group.id === data.id) ? current : [...current, data],
+      );
+      feedback.success("Grupo adicionado.", {
+        event: "wishlist.group_add_succeeded",
+        context: { groupId: data.id },
+      });
+      return data.id;
+    },
+    [groups, supabase],
+  );
+
+  const createType = useCallback(
+    async (rawName: string) => {
+      const name = rawName.trim();
+      const existing = types.find((type) => normalizeText(type.name) === normalizeText(name));
+      if (existing) return existing.id;
+
+      const sortOrder = types.reduce((highest, type) => Math.max(highest, type.sort_order), 0) + 1;
+      const { data, error: insertError } = await supabase
+        .from("item_types")
+        .insert({ name, sort_order: sortOrder })
+        .select()
+        .single();
+
+      if (insertError) {
+        feedback.error("Não consegui adicionar o tipo.", {
+          event: "wishlist.type_add_failed",
+          error: insertError,
+        });
+        return null;
+      }
+
+      setTypes((current) =>
+        current.some((type) => type.id === data.id) ? current : [...current, data],
+      );
+      feedback.success("Tipo adicionado.", {
+        event: "wishlist.type_add_succeeded",
+        context: { typeId: data.id },
+      });
+      return data.id;
+    },
+    [types, supabase],
+  );
 
   const addItem = useCallback(
     async (draft: ItemDraft) => {
@@ -118,7 +193,9 @@ export function useWishlist(initialData: WishlistData) {
 
   const toggleStatus = useCallback(
     async (item: Item) => {
-      const nextStatus = item.status === "pending" ? "purchased" : "pending";
+      // O clique na marca continua sendo o atalho de sempre: quero ↔ comprei.
+      // Os estados intermediários vivem no painel do item, para quem quiser.
+      const nextStatus = item.status === "wanted" ? "purchased" : "wanted";
       const { error: toggleError } = await supabase
         .from("items")
         .update({
@@ -197,8 +274,10 @@ export function useWishlist(initialData: WishlistData) {
 
   return {
     items,
-    areas,
-    categories,
+    groups,
+    types,
+    createGroup,
+    createType,
     addItem,
     updateItem,
     toggleStatus,

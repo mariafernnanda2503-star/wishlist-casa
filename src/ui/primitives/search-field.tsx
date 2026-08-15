@@ -42,7 +42,7 @@ export function SearchField({
           type="button"
           onClick={onClear}
           aria-label="Limpar busca"
-          className="text-ink-soft hover:text-ink focus-visible:outline-accent absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer rounded-sm p-1 transition-colors duration-100 focus-visible:outline-2 focus-visible:outline-offset-1"
+          className="text-ink-soft hover:text-ink focus-visible:outline-accent absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer rounded-sm p-1 transition-colors duration-100 focus-visible:outline-2 focus-visible:outline-offset-1 max-sm:right-1.5 max-sm:flex max-sm:size-8 max-sm:items-center max-sm:justify-center max-sm:p-0"
         >
           <XIcon className="size-3.5" />
         </button>

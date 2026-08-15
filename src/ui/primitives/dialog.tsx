@@ -31,9 +31,9 @@ export function Dialog({ title, eyebrow, closeLabel = "Fechar", onClose, childre
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
-      className="backdrop:bg-ink/40 m-auto w-[calc(100%-24px)] max-w-[560px] overflow-visible border-none bg-transparent p-0 backdrop:backdrop-blur-[2px]"
+      className="backdrop:bg-ink/40 m-auto w-[calc(100%-16px)] max-w-[560px] overflow-visible border-none bg-transparent p-0 backdrop:backdrop-blur-[2px] sm:w-[calc(100%-24px)]"
     >
-      <div className="scrollbar-themed bg-surface shadow-control max-h-[calc(100dvh-24px)] overflow-y-auto rounded-[10px] p-4 sm:p-5">
+      <div className="scrollbar-themed bg-surface shadow-control max-h-[calc(100dvh-16px)] overflow-y-auto rounded-[10px] p-3.5 sm:max-h-[calc(100dvh-24px)] sm:p-5">
         <header className="border-line mb-4 flex items-start justify-between gap-4 border-b pb-3">
           <div>
             {eyebrow ? (

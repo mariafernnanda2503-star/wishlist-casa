@@ -6,14 +6,14 @@ import { cn } from "@/shared/lib/cn";
 import { SortIcon } from "@/ui/icons";
 
 import { PRIORITY_ORDER } from "../lib";
-import { type Area, type Category, type Item, type Priority } from "../types";
+import { type Group, type ItemType, type Item, type Priority } from "../types";
 
 import { ItemRow } from "./item-row";
 
 const HEAD_CELL =
   "bg-surface-alt shadow-table-header p-0 text-left text-[11px] font-semibold tracking-[0.06em] whitespace-nowrap text-ink-soft uppercase transition-colors duration-100";
 
-type SortKey = "name" | "priority" | "area" | "category" | "quantity" | "price";
+type SortKey = "name" | "priority" | "group" | "type" | "quantity" | "price";
 type SortState = { key: SortKey; direction: "asc" | "desc" };
 
 const COLLATOR = new Intl.Collator("pt-BR", { sensitivity: "base", numeric: true });
@@ -63,8 +63,8 @@ function SortableHead({ label, sortKey, sort, onSort }: SortableHeadProps) {
 
 type ItemTableProps = {
   items: Item[];
-  areas: Area[];
-  categories: Category[];
+  groups: Group[];
+  types: ItemType[];
   emptyMessage: string;
   onOpen: (id: string) => void;
   onToggleStatus: (item: Item) => void;
@@ -73,19 +73,19 @@ type ItemTableProps = {
 
 export function ItemTable({
   items,
-  areas,
-  categories,
+  groups,
+  types,
   emptyMessage,
   onOpen,
   onToggleStatus,
   onChangePriority,
 }: ItemTableProps) {
   const [sort, setSort] = useState<SortState | null>(null);
-  const areaNames = useMemo(() => new Map(areas.map((area) => [area.id, area.name])), [areas]);
-  const categoryNames = useMemo(
-    () => new Map(categories.map((category) => [category.id, category.name])),
-    [categories],
+  const groupNames = useMemo(
+    () => new Map(groups.map((group) => [group.id, group.name])),
+    [groups],
   );
+  const typeNames = useMemo(() => new Map(types.map((type) => [type.id, type.name])), [types]);
 
   const sortedItems = useMemo(() => {
     if (!sort) return items;
@@ -97,10 +97,10 @@ export function ItemTable({
           return item.name;
         case "priority":
           return PRIORITY_ORDER[item.priority];
-        case "area":
-          return item.area_id ? (areaNames.get(item.area_id) ?? null) : null;
-        case "category":
-          return item.category_id ? (categoryNames.get(item.category_id) ?? null) : null;
+        case "group":
+          return item.group_id ? (groupNames.get(item.group_id) ?? null) : null;
+        case "type":
+          return item.type_id ? (typeNames.get(item.type_id) ?? null) : null;
         case "quantity":
           return item.quantity;
         case "price":
@@ -123,7 +123,7 @@ export function ItemTable({
 
       return activeSort.direction === "asc" ? comparison : -comparison;
     });
-  }, [areaNames, categoryNames, items, sort]);
+  }, [groupNames, typeNames, items, sort]);
 
   function handleSort(key: SortKey) {
     setSort((current) => ({
@@ -137,7 +137,7 @@ export function ItemTable({
   }
 
   return (
-    <div className="scrollbar-themed bg-surface shadow-control mb-6 overflow-x-auto rounded-[8px] max-sm:overflow-x-visible max-sm:rounded-none max-sm:bg-transparent max-sm:shadow-none">
+    <div className="scrollbar-themed bg-surface shadow-control mb-6 overflow-x-auto rounded-[8px] max-sm:overflow-x-visible">
       <table className="w-full border-collapse text-sm max-sm:block">
         <thead className="max-sm:hidden">
           <tr>
@@ -147,20 +147,20 @@ export function ItemTable({
             />
             <SortableHead label="Produto" sortKey="name" sort={sort} onSort={handleSort} />
             <SortableHead label="Prioridade" sortKey="priority" sort={sort} onSort={handleSort} />
-            <SortableHead label="Área" sortKey="area" sort={sort} onSort={handleSort} />
-            <SortableHead label="Categoria" sortKey="category" sort={sort} onSort={handleSort} />
+            <SortableHead label="Grupo" sortKey="group" sort={sort} onSort={handleSort} />
+            <SortableHead label="Tipo" sortKey="type" sort={sort} onSort={handleSort} />
             <SortableHead label="Qtd" sortKey="quantity" sort={sort} onSort={handleSort} />
             <SortableHead label="Preço" sortKey="price" sort={sort} onSort={handleSort} />
             <th className={cn(HEAD_CELL, "px-3 pt-2.5 pb-3 last:pr-3.5")}>Link</th>
           </tr>
         </thead>
-        <tbody className="max-sm:flex max-sm:flex-col max-sm:gap-2.5 [&>tr:last-child>td]:border-b-0 sm:[&>tr:last-child>td]:pb-3">
+        <tbody className="max-sm:flex max-sm:flex-col [&>tr:last-child>td]:border-b-0 sm:[&>tr:last-child>td]:pb-3">
           {sortedItems.map((item) => (
             <ItemRow
               key={item.id}
               item={item}
-              areaName={item.area_id ? (areaNames.get(item.area_id) ?? "—") : "—"}
-              categoryName={item.category_id ? (categoryNames.get(item.category_id) ?? "—") : "—"}
+              groupName={item.group_id ? (groupNames.get(item.group_id) ?? "—") : "—"}
+              typeName={item.type_id ? (typeNames.get(item.type_id) ?? "—") : "—"}
               onOpen={onOpen}
               onToggleStatus={onToggleStatus}
               onChangePriority={onChangePriority}

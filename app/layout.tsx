@@ -17,6 +17,9 @@ const googleSans = Google_Sans({
 export const metadata: Metadata = {
   title: "Wishlist da Casa",
   description: "Lista de compras compartilhada da casa.",
+  // O manifest é o que habilita instalar como app e receber compartilhamentos.
+  manifest: "/manifest.webmanifest",
+  icons: { icon: "/icon.svg" },
 };
 
 export const viewport: Viewport = {

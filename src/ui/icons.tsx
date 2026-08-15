@@ -174,6 +174,15 @@ export function PencilIcon(props: IconProps) {
   );
 }
 
+export function SpinnerIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      {/* Arco de 3/4 — o vão é o que deixa a rotação visível. */}
+      <path d="M21 12a9 9 0 1 1-6.22-8.56" />
+    </Icon>
+  );
+}
+
 export function CheckIcon(props: IconProps) {
   return (
     <Icon strokeWidth={3} {...props}>

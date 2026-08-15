@@ -5,7 +5,7 @@ import { type MouseEvent } from "react";
 import { cn } from "@/shared/lib/cn";
 import { Checkbox } from "@/ui/primitives";
 
-import { formatPrice } from "../lib";
+import { formatPrice, isAcquired } from "../lib";
 import { type Item, type Priority } from "../types";
 
 import { ItemLink } from "./item-actions";
@@ -18,8 +18,8 @@ const DESKTOP_ONLY = "max-sm:hidden";
 
 type ItemRowProps = {
   item: Item;
-  areaName: string;
-  categoryName: string;
+  groupName: string;
+  typeName: string;
   onOpen: (id: string) => void;
   onToggleStatus: (item: Item) => void;
   onChangePriority: (id: string, priority: Priority) => void;
@@ -27,18 +27,18 @@ type ItemRowProps = {
 
 export function ItemRow({
   item,
-  areaName,
-  categoryName,
+  groupName,
+  typeName,
   onOpen,
   onToggleStatus,
   onChangePriority,
 }: ItemRowProps) {
-  const purchased = item.status === "purchased";
+  const purchased = isAcquired(item.status);
   const quantityText = item.quantity > 1 ? `×${item.quantity}` : "";
 
   const priority = <PriorityCell item={item} onChange={onChangePriority} />;
-  const areaTag = <Tag className="bg-accent-soft text-accent">{areaName}</Tag>;
-  const categoryTag = <Tag className="bg-category-soft text-category">{categoryName}</Tag>;
+  const groupTag = <Tag className="bg-accent-soft text-accent">{groupName}</Tag>;
+  const typeTag = <Tag className="bg-type-soft text-type">{typeName}</Tag>;
   const linkIcon = <ItemLink link={item.link} />;
 
   function handleRowClick(event: MouseEvent<HTMLTableRowElement>) {
@@ -50,14 +50,14 @@ export function ItemRow({
     <tr
       className={cn(
         purchased && "opacity-55",
-        "hover:bg-surface-alt/60 max-sm:bg-surface max-sm:shadow-control max-sm:hover:bg-surface cursor-pointer transition-colors duration-100 max-sm:flex max-sm:items-start max-sm:rounded-[8px] max-sm:p-3 sm:h-[52px]",
+        "hover:bg-surface-alt/60 max-sm:border-line cursor-pointer transition-colors duration-100 max-sm:flex max-sm:h-[72px] max-sm:items-center max-sm:border-b max-sm:px-3 max-sm:last:border-b-0 sm:h-[52px]",
       )}
       onClick={handleRowClick}
     >
       <td
         className={cn(
           CELL,
-          "w-[1%] whitespace-nowrap max-sm:flex max-sm:w-8 max-sm:shrink-0 max-sm:items-center max-sm:justify-start max-sm:pt-0.5",
+          "w-[1%] whitespace-nowrap max-sm:flex max-sm:w-10 max-sm:shrink-0 max-sm:items-center max-sm:justify-center",
         )}
       >
         <Checkbox
@@ -65,41 +65,48 @@ export function ItemRow({
           onChange={() => onToggleStatus(item)}
           label={`Marcar ${item.name} como ${purchased ? "pendente" : "comprado"}`}
           labelClassName="sr-only"
+          className="max-sm:p-2"
           indicatorClassName="size-5 [&_svg]:size-3"
         />
       </td>
 
       <td className={cn(CELL, "max-sm:min-w-0 max-sm:flex-1")}>
-        <div>
+        <div className="max-sm:hidden">
           <button
             type="button"
             title={item.note ?? undefined}
             onClick={() => onOpen(item.id)}
-            className="hover:text-accent focus-visible:text-accent min-w-[140px] cursor-pointer text-left font-medium focus-visible:outline-none"
+            className="hover:text-accent focus-visible:text-accent max-w-full cursor-pointer text-left font-medium break-words focus-visible:outline-none sm:min-w-[140px]"
           >
             {item.name}
           </button>
         </div>
 
-        <div className="border-line mt-2.5 hidden flex-wrap items-center gap-1.5 border-t pt-2.5 max-sm:flex">
-          {priority}
-          {areaTag}
-          {categoryTag}
-        </div>
-        <div className="mt-2.5 hidden items-center max-sm:flex">
-          {quantityText ? (
-            <span className="text-ink-soft mr-2 font-semibold">{quantityText}</span>
-          ) : null}
-          <span className="text-accent mr-2 font-semibold tabular-nums">
-            {formatPrice(item.price)}
-          </span>
-          {item.link ? <span className="ml-auto">{linkIcon}</span> : null}
+        <div className="hidden min-w-0 max-sm:block">
+          <button
+            type="button"
+            title={item.note ?? undefined}
+            onClick={() => onOpen(item.id)}
+            className="hover:text-accent focus-visible:text-accent block w-full truncate text-left text-[13.5px] font-semibold focus-visible:outline-none"
+          >
+            {item.name}
+          </button>
+          <div className="mt-1 flex min-w-0 items-center gap-1.5">
+            {priority}
+            <span className="text-ink-soft min-w-0 flex-1 truncate text-[11px]">
+              {quantityText ? `${quantityText} · ` : ""}
+              {groupName} · {typeName}
+            </span>
+            <span className="text-accent shrink-0 text-[13px] font-semibold tabular-nums">
+              {formatPrice(item.price)}
+            </span>
+          </div>
         </div>
       </td>
 
       <td className={cn(CELL, DESKTOP_ONLY, "whitespace-nowrap")}>{priority}</td>
-      <td className={cn(CELL, DESKTOP_ONLY)}>{areaTag}</td>
-      <td className={cn(CELL, DESKTOP_ONLY)}>{categoryTag}</td>
+      <td className={cn(CELL, DESKTOP_ONLY)}>{groupTag}</td>
+      <td className={cn(CELL, DESKTOP_ONLY)}>{typeTag}</td>
       <td
         className={cn(
           CELL,

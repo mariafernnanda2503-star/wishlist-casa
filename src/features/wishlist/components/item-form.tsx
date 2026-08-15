@@ -2,62 +2,70 @@
 
 import { useMemo, useRef, useState, type FormEvent } from "react";
 
+import { feedback } from "@/shared/lib/feedback";
+import { SearchIcon, SpinnerIcon } from "@/ui/icons";
 import { Button, Input, Select } from "@/ui/primitives";
 
-import { PRIORITIES, PRIORITY_FORM_LABEL } from "../lib";
+import { PRIORITIES, PRIORITY_FORM_LABEL, priceToInput } from "../lib";
 import { itemDraftSchema, type ItemFormValues } from "../schemas";
-import { type Area, type Category, type ItemDraft } from "../types";
+import { type Group, type ItemType, type ItemDraft } from "../types";
 
 export const EMPTY_ITEM_FORM: ItemFormValues = {
   name: "",
   price: "",
+  priceTarget: "",
   quantity: "1",
   priority: "media",
   link: "",
   note: "",
-  areaId: "",
-  categoryId: "",
+  groupId: "",
+  typeId: "",
 };
 
 type ItemFormProps = {
-  areas: Area[];
-  categories: Category[];
+  groups: Group[];
+  types: ItemType[];
   initialValues?: ItemFormValues;
   submitLabel: string;
   /** Só o formulário de edição passa isto — é o que faz o botão Cancelar aparecer. */
   onCancel?: () => void;
   onSubmit: (draft: ItemDraft) => void | Promise<void>;
+  onCreateGroup: (name: string) => Promise<string | null>;
+  onCreateType: (name: string) => Promise<string | null>;
   focusNameOnMount?: boolean;
 };
 
 export function ItemForm({
-  areas,
-  categories,
+  groups,
+  types,
   initialValues = EMPTY_ITEM_FORM,
   submitLabel,
   onCancel,
   onSubmit,
+  onCreateGroup,
+  onCreateType,
   focusNameOnMount = false,
 }: ItemFormProps) {
   const [values, setValues] = useState<ItemFormValues>(initialValues);
   const [error, setError] = useState<string | null>(null);
+  const [fetchingLink, setFetchingLink] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
 
-  // Área e categoria são opcionais: a entrada vazia é o "nenhuma" de verdade,
+  // Grupo e tipo são opcionais: a entrada vazia é o "nenhuma" de verdade,
   // e o gatilho mostra o rótulo enquanto ela estiver escolhida.
-  const areaOptions = useMemo(
+  const groupOptions = useMemo(
     () => [
       { value: "", label: "Nenhuma" },
-      ...areas.map((area) => ({ value: area.id, label: area.name })),
+      ...groups.map((group) => ({ value: group.id, label: group.name })),
     ],
-    [areas],
+    [groups],
   );
-  const categoryOptions = useMemo(
+  const typeOptions = useMemo(
     () => [
       { value: "", label: "Nenhuma" },
-      ...categories.map((category) => ({ value: category.id, label: category.name })),
+      ...types.map((type) => ({ value: type.id, label: type.name })),
     ],
-    [categories],
+    [types],
   );
   const priorityOptions = useMemo(
     () => PRIORITIES.map((priority) => ({ value: priority, label: PRIORITY_FORM_LABEL[priority] })),
@@ -66,6 +74,41 @@ export function ItemForm({
 
   function setField<K extends keyof ItemFormValues>(field: K, value: ItemFormValues[K]) {
     setValues((current) => ({ ...current, [field]: value }));
+  }
+
+  async function fillFromLink(rawLink: string) {
+    const link = rawLink.trim();
+    if (!link.startsWith("http") || fetchingLink) return;
+
+    setFetchingLink(true);
+    try {
+      const response = await fetch(`/api/link-preview?url=${encodeURIComponent(link)}`);
+      const preview = (await response.json()) as { name: string | null; price: number | null };
+
+      if (preview.name === null && preview.price === null) {
+        feedback.info("Não consegui ler essa página. Preencha à mão.", {
+          event: "link_preview.empty",
+        });
+        return;
+      }
+
+      // Só completa o que está vazio: o que a pessoa digitou vale mais do que
+      // o que a loja publica.
+      setValues((current) => ({
+        ...current,
+        link,
+        name: current.name.trim() || (preview.name ?? ""),
+        price: current.price.trim() || (preview.price === null ? "" : priceToInput(preview.price)),
+      }));
+      feedback.success("Dados do link preenchidos.", { event: "link_preview.filled" });
+    } catch (cause) {
+      feedback.error("Não consegui buscar os dados do link.", {
+        event: "link_preview.failed",
+        error: cause,
+      });
+    } finally {
+      setFetchingLink(false);
+    }
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -114,21 +157,31 @@ export function ItemForm({
         />
       </div>
 
-      <div className="flex gap-2">
+      <Input
+        type="text"
+        inputMode="decimal"
+        placeholder="Compro se estiver abaixo de... (opcional)"
+        value={values.priceTarget}
+        onChange={(event) => setField("priceTarget", event.target.value)}
+      />
+
+      <div className="flex gap-2 max-[420px]:flex-col">
         <Select
-          aria-label="Área"
-          placeholder="Área (opcional)"
-          options={areaOptions}
-          value={values.areaId}
-          onChange={(value) => setField("areaId", value)}
+          aria-label="Grupo"
+          placeholder="Grupo (opcional)"
+          options={groupOptions}
+          value={values.groupId}
+          onChange={(value) => setField("groupId", value)}
+          onCreateOption={onCreateGroup}
           wrapperClassName="min-w-0 flex-1"
         />
         <Select
-          aria-label="Categoria"
-          placeholder="Categoria (opcional)"
-          options={categoryOptions}
-          value={values.categoryId}
-          onChange={(value) => setField("categoryId", value)}
+          aria-label="Tipo"
+          placeholder="Tipo (opcional)"
+          options={typeOptions}
+          value={values.typeId}
+          onChange={(value) => setField("typeId", value)}
+          onCreateOption={onCreateType}
           wrapperClassName="min-w-0 flex-1"
         />
       </div>
@@ -141,13 +194,32 @@ export function ItemForm({
         onChange={(value) => setField("priority", value as ItemFormValues["priority"])}
       />
 
-      <Input
-        type="text"
-        inputMode="url"
-        placeholder="Link (opcional)"
-        value={values.link}
-        onChange={(event) => setField("link", event.target.value)}
-      />
+      <div className="flex gap-2">
+        <Input
+          type="text"
+          inputMode="url"
+          placeholder="Link (opcional)"
+          className="min-w-0 flex-1"
+          value={values.link}
+          onChange={(event) => setField("link", event.target.value)}
+          // Colar é o momento em que a busca automática compensa: ninguém cola
+          // um link de produto sem querer os dados dele.
+          onPaste={(event) => {
+            const pasted = event.clipboardData.getData("text");
+            if (pasted.startsWith("http")) void fillFromLink(pasted);
+          }}
+        />
+        <Button
+          type="button"
+          variant="secondary"
+          disabled={fetchingLink || !values.link.trim().startsWith("http")}
+          onClick={() => void fillFromLink(values.link)}
+          aria-label="Buscar dados do link"
+          className="shrink-0 px-3"
+        >
+          {fetchingLink ? <SpinnerIcon className="animate-spin" /> : <SearchIcon />}
+        </Button>
+      </div>
       <Input
         type="text"
         placeholder="Nota (opcional)"

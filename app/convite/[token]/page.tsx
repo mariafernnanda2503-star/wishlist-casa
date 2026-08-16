@@ -1,4 +1,4 @@
-import { AcceptInvite } from "@/features/wishlist/components";
+import { AcceptInvite } from "@/features/lists/components";
 import { createClient } from "@/shared/lib/supabase/server";
 import { BrandLogo } from "@/ui/brand-logo";
 

@@ -47,13 +47,22 @@ em **Authentication > Users > Add user**, marcando "Auto Confirm User".
 
 ## Banco de dados
 
-Três tabelas: `areas` e `categories` são listas fixas, editadas pelo painel do Supabase;
-`items` guarda a wishlist. O schema é versionado em
-[`supabase/migrations/`](supabase/migrations/).
+O schema é versionado em [`supabase/migrations/`](supabase/migrations/).
 
-**Row Level Security**: só usuário autenticado acessa os dados. `areas` e `categories` são
-somente leitura para o app; `items` permite leitura e escrita. O papel `anon` não tem nenhum
-privilégio — a anon key é pública por design e não abre nada sozinha.
+`workspaces` é a unidade de acesso; `workspace_members` diz quem participa e
+`workspace_invites` guarda os convites pendentes. Cada workspace tem suas `lists`, e
+`lists.kind` separa `wishlist` de `shopping` — a lista de desejos encerra o item na compra,
+a de mercado reinicia. Os `items` pertencem a uma lista e se classificam por `item_groups`
+e `item_types`, criados dentro do workspace.
+
+Em volta do item: `price_checks` (preços observados, com loja e data), `item_events`
+(trilha de alterações, escrita por trigger) e `profiles` (espelho de `auth.users`, para dar
+nome aos uuids de autoria). Fechar uma ida ao mercado grava `shopping_trips` e
+`shopping_trip_items` e alimenta `price_checks`.
+
+**Row Level Security**: o acesso segue a participação no workspace, resolvida por funções
+`security definer` no schema `private`. O papel `anon` não tem nenhum privilégio — a anon
+key é pública por design e não abre nada sozinha.
 
 O cadastro de novos usuários fica desligado. As contas são criadas à mão em
 **Authentication > Users**.

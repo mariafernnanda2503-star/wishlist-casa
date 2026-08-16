@@ -140,6 +140,7 @@ export type Database = {
           receipt_url: string | null
           status: string
           type_id: string | null
+          unit: string | null
           updated_at: string
           updated_by: string | null
           warranty_until: string | null
@@ -169,6 +170,7 @@ export type Database = {
           receipt_url?: string | null
           status?: string
           type_id?: string | null
+          unit?: string | null
           updated_at?: string
           updated_by?: string | null
           warranty_until?: string | null
@@ -198,6 +200,7 @@ export type Database = {
           receipt_url?: string | null
           status?: string
           type_id?: string | null
+          unit?: string | null
           updated_at?: string
           updated_by?: string | null
           warranty_until?: string | null
@@ -232,6 +235,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           id: string
+          kind: string
           name: string
           updated_at: string
           workspace_id: string
@@ -241,6 +245,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          kind?: string
           name: string
           updated_at?: string
           workspace_id: string
@@ -250,6 +255,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          kind?: string
           name?: string
           updated_at?: string
           workspace_id?: string
@@ -325,6 +331,139 @@ export type Database = {
           id?: string
         }
         Relationships: []
+      }
+      shopping_trip_items: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string | null
+          name: string
+          quantity: number
+          trip_id: string
+          unit: string | null
+          unit_price: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id?: string | null
+          name: string
+          quantity?: number
+          trip_id: string
+          unit?: string | null
+          unit_price?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string | null
+          name?: string
+          quantity?: number
+          trip_id?: string
+          unit?: string | null
+          unit_price?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopping_trip_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shopping_trip_items_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "shopping_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shopping_trips: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          list_id: string
+          note: string | null
+          shopped_at: string
+          store: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          list_id: string
+          note?: string | null
+          shopped_at?: string
+          store?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          list_id?: string
+          note?: string | null
+          shopped_at?: string
+          store?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopping_trips_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_events: {
+        Row: {
+          actor: string | null
+          created_at: string
+          from_value: string | null
+          id: string
+          payload: Json | null
+          to_value: string | null
+          trip_id: string
+          type: string
+        }
+        Insert: {
+          actor?: string | null
+          created_at?: string
+          from_value?: string | null
+          id?: string
+          payload?: Json | null
+          to_value?: string | null
+          trip_id: string
+          type: string
+        }
+        Update: {
+          actor?: string | null
+          created_at?: string
+          from_value?: string | null
+          id?: string
+          payload?: Json | null
+          to_value?: string | null
+          trip_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_events_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "shopping_trips"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       workspace_invites: {
         Row: {
@@ -452,10 +591,37 @@ export type Database = {
           },
         ]
       }
+      shopping_trip_totals: {
+        Row: {
+          line_count: number | null
+          priced_count: number | null
+          total: number | null
+          trip_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopping_trip_items_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "shopping_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       accept_workspace_invite: {
         Args: { invite_token: string }
+        Returns: string
+      }
+      close_shopping_trip: {
+        Args: {
+          p_lines: Json
+          p_list_id: string
+          p_note: string
+          p_shopped_at: string
+          p_store: string
+        }
         Returns: string
       }
       peek_workspace_invite: {

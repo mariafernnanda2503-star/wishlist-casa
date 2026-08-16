@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
-import { WishlistPage } from "@/features/wishlist/components";
-import { getWishlistData, getWorkspaceContext } from "@/features/wishlist/queries";
+import { ListPage } from "@/features/lists/components";
+import { getListData, getWorkspaceContext } from "@/features/lists/queries";
 import { parseShareTarget } from "@/shared/lib/share-target";
 import { createClient } from "@/shared/lib/supabase/server";
 
@@ -48,13 +48,13 @@ export default async function Home({ searchParams }: HomeProps) {
     return <Aviso>Você ainda não participa de nenhuma lista. Peça um convite.</Aviso>;
   }
 
-  const data = await getWishlistData(context.activeList.id, context.activeWorkspace.id);
+  const data = await getListData(context.activeList.id, context.activeWorkspace.id);
 
   if (!data) return <Aviso>Não consegui carregar os dados. Recarregue a página.</Aviso>;
 
   return (
-    <WishlistPage
-      // A chave força remontar ao trocar de lista. Sem ela, `useWishlist`
+    <ListPage
+      // A chave força remontar ao trocar de lista. Sem ela, `useListData`
       // mantém o estado da lista anterior: `useState(initialData)` só usa o
       // valor inicial na primeira montagem, e a navegação é client-side.
       key={context.activeList.id}

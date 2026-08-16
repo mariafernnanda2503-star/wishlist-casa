@@ -143,6 +143,7 @@ export type Database = {
           unit: string | null
           updated_at: string
           updated_by: string | null
+          wanter_ids: string[]
           warranty_until: string | null
         }
         Insert: {
@@ -173,6 +174,7 @@ export type Database = {
           unit?: string | null
           updated_at?: string
           updated_by?: string | null
+          wanter_ids?: string[]
           warranty_until?: string | null
         }
         Update: {
@@ -203,6 +205,7 @@ export type Database = {
           unit?: string | null
           updated_at?: string
           updated_by?: string | null
+          wanter_ids?: string[]
           warranty_until?: string | null
         }
         Relationships: [
@@ -461,6 +464,51 @@ export type Database = {
             columns: ["trip_id"]
             isOneToOne: false
             referencedRelation: "shopping_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wanters: {
+        Row: {
+          archived_at: string | null
+          created_at: string
+          id: string
+          name: string
+          profile_id: string | null
+          sort_order: number
+          workspace_id: string
+        }
+        Insert: {
+          archived_at?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          profile_id?: string | null
+          sort_order?: number
+          workspace_id: string
+        }
+        Update: {
+          archived_at?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          profile_id?: string | null
+          sort_order?: number
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wanters_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wanters_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]

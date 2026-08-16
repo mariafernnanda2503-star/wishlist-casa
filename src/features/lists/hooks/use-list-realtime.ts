@@ -50,6 +50,9 @@ export function useListRealtime(supabase: Client, listId: string, handlers: Hand
       .on("postgres_changes", { event: "*", schema: "public", table: "item_types" }, () => {
         onTaxonomyChanged();
       })
+      .on("postgres_changes", { event: "*", schema: "public", table: "wanters" }, () => {
+        onTaxonomyChanged();
+      })
       // Preço registrado muda o total da lista. Sem isto, o card só acompanha
       // quem registrou — e só depois de recarregar a página.
       .on("postgres_changes", { event: "*", schema: "public", table: "price_checks" }, () => {

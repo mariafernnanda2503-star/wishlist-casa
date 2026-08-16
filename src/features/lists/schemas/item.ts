@@ -20,6 +20,8 @@ export const itemDraftSchema = z.object({
   /** Fracionária desde a lista de mercado: "1,5 kg" não cabe em inteiro. */
   quantity: z.string().transform(parseQuantityInput),
   unit: z.string().transform(emptyToNull),
+  /** Já chega como ids escolhidos, não como texto: o seletor resolve os nomes. */
+  wanterIds: z.array(z.string()),
   priority: z.enum(["alta", "media", "baixa"]),
   link: optionalUrl,
   note: z.string().transform(emptyToNull),

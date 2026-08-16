@@ -32,7 +32,7 @@ import { ListSwitcher } from "./workspace/list-switcher";
 import { MembersDialog } from "./workspace/members-dialog";
 import { WorkspaceSwitcher } from "./workspace/workspace-switcher";
 
-const NO_FILTERS: Filters = { search: "", groupId: ALL, typeId: ALL, priority: ALL };
+const NO_FILTERS: Filters = { search: "", groupId: ALL, typeId: ALL, priority: ALL, wanterId: ALL };
 type ListTab = "shopping" | "purchased";
 
 /**
@@ -58,9 +58,11 @@ export function ListPage({ initialData, context, currentUserId, sharedDraft }: L
     items,
     groups,
     types,
+    wanters,
     priceSummaries,
     createGroup,
     createType,
+    createWanter,
     reloadItems,
     addItem,
     updateItem,
@@ -84,6 +86,7 @@ export function ListPage({ initialData, context, currentUserId, sharedDraft }: L
       if (filters.groupId !== ALL && item.group_id !== filters.groupId) return false;
       if (filters.typeId !== ALL && item.type_id !== filters.typeId) return false;
       if (filters.priority !== ALL && item.priority !== filters.priority) return false;
+      if (filters.wanterId !== ALL && !item.wanter_ids.includes(filters.wanterId)) return false;
       if (search && !normalizeText(item.name).includes(search)) return false;
       return true;
     });
@@ -115,6 +118,7 @@ export function ListPage({ initialData, context, currentUserId, sharedDraft }: L
     filters.groupId !== ALL ||
     filters.typeId !== ALL ||
     filters.priority !== ALL ||
+    filters.wanterId !== ALL ||
     filters.search.trim() !== "";
   const emptyMessage = hasActiveFilter
     ? "Nenhum item encontrado com esse filtro/busca."
@@ -134,9 +138,9 @@ export function ListPage({ initialData, context, currentUserId, sharedDraft }: L
     void deleteItem(id);
   }
 
-  // Um mapa só, montado quando grupos ou tipos mudam, servindo tabela, grade e
-  // painel — antes cada um resolvia nome do seu jeito.
-  const names = useMemo(() => createNameLookup(groups, types), [groups, types]);
+  // Um mapa só, montado quando grupos, tipos ou pessoas mudam, servindo tabela,
+  // grade e painel — antes cada um resolvia nome do seu jeito.
+  const names = useMemo(() => createNameLookup(groups, types, wanters), [groups, types, wanters]);
 
   const tableProps = {
     names,
@@ -199,15 +203,24 @@ export function ListPage({ initialData, context, currentUserId, sharedDraft }: L
         <TotalsPanel totals={totals} />
       )}
 
-      <FiltersBar groups={groups} types={types} filters={filters} onChange={setFilters} />
+      <FiltersBar
+        groups={groups}
+        types={types}
+        wanters={isShopping ? [] : wanters}
+        filters={filters}
+        onChange={setFilters}
+      />
 
       <AddItemPanel
         groups={groups}
         types={types}
+        wanters={wanters}
         kind={kind}
+        currentUserId={currentUserId}
         onAdd={addItem}
         onCreateGroup={createGroup}
         onCreateType={createType}
+        onCreateWanter={createWanter}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         sharedDraft={sharedDraft}
@@ -289,6 +302,7 @@ export function ListPage({ initialData, context, currentUserId, sharedDraft }: L
           item={selectedItem}
           groups={groups}
           types={types}
+          wanters={wanters}
           kind={kind}
           groupName={names.group(selectedItem.group_id)}
           typeName={names.type(selectedItem.type_id)}
@@ -298,6 +312,7 @@ export function ListPage({ initialData, context, currentUserId, sharedDraft }: L
           onSave={updateItem}
           onCreateGroup={createGroup}
           onCreateType={createType}
+          onCreateWanter={createWanter}
           onDelete={() => handleDelete(selectedItem.id)}
         />
       ) : null}

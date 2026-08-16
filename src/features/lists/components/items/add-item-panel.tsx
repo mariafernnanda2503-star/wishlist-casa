@@ -7,7 +7,7 @@ import { type SharedTarget } from "@/shared/lib/share-target";
 import { GridIcon, PlusIcon, TableIcon } from "@/ui/icons";
 import { Button, Dialog } from "@/ui/primitives";
 
-import { type Group, type ItemType, type ItemDraft, type ListKind } from "../../types";
+import { type Group, type ItemType, type ItemDraft, type ListKind, type Wanter } from "../../types";
 
 import { EMPTY_ITEM_FORM, ItemForm } from "./item-form";
 
@@ -16,10 +16,14 @@ export type ViewMode = "table" | "grid";
 type AddItemPanelProps = {
   groups: Group[];
   types: ItemType[];
+  wanters: Wanter[];
   kind: ListKind;
+  /** Quem está cadastrando — o item já nasce marcado como dela. */
+  currentUserId: string;
   onAdd: (draft: ItemDraft) => Promise<boolean>;
   onCreateGroup: (name: string) => Promise<string | null>;
   onCreateType: (name: string) => Promise<string | null>;
+  onCreateWanter: (name: string) => Promise<string | null>;
   viewMode: ViewMode;
   onViewModeChange: (viewMode: ViewMode) => void;
   sharedDraft: SharedTarget | null;
@@ -28,16 +32,25 @@ type AddItemPanelProps = {
 export function AddItemPanel({
   groups,
   types,
+  wanters,
   kind,
+  currentUserId,
   onAdd,
   onCreateGroup,
   onCreateType,
+  onCreateWanter,
   viewMode,
   onViewModeChange,
   sharedDraft,
 }: AddItemPanelProps) {
   // Chegou por compartilhamento: o cadastro já nasce aberto e preenchido.
   const [open, setOpen] = useState(sharedDraft !== null);
+
+  // O palpite mais provável é que quem cadastra é quem quer — e desmarcar é um
+  // toque. No mercado o campo nem aparece, então o palpite não atrapalha.
+  const mine = wanters.flatMap((wanter) =>
+    wanter.profile_id === currentUserId ? [wanter.id] : [],
+  );
 
   async function handleAdd(draft: ItemDraft) {
     const added = await onAdd(draft);
@@ -102,22 +115,21 @@ export function AddItemPanel({
           <ItemForm
             groups={groups}
             types={types}
+            wanters={wanters}
             kind={kind}
-            initialValues={
-              sharedDraft
-                ? {
-                    ...EMPTY_ITEM_FORM,
-                    name: sharedDraft.title ?? "",
-                    link: sharedDraft.url ?? "",
-                  }
-                : undefined
-            }
+            initialValues={{
+              ...EMPTY_ITEM_FORM,
+              name: sharedDraft?.title ?? "",
+              link: sharedDraft?.url ?? "",
+              wanterIds: mine,
+            }}
             submitLabel="Adicionar"
             focusNameOnMount
             onCancel={() => setOpen(false)}
             onSubmit={handleAdd}
             onCreateGroup={onCreateGroup}
             onCreateType={onCreateType}
+            onCreateWanter={onCreateWanter}
           />
         </Dialog>
       ) : null}

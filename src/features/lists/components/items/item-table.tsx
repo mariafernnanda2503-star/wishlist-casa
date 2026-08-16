@@ -154,6 +154,7 @@ export function ItemTable({
               item={item}
               groupName={names.group(item.group_id)}
               typeName={names.type(item.type_id)}
+              wanterNames={names.wanters(item.wanter_ids)}
               onOpen={onOpen}
               onToggleStatus={onToggleStatus}
               onChangePriority={onChangePriority}

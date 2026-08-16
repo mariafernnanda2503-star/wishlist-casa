@@ -4,6 +4,13 @@ type Tables = Database["public"]["Tables"];
 
 export type Group = Tables["item_groups"]["Row"];
 export type ItemType = Tables["item_types"]["Row"];
+
+/**
+ * Para quem é o item. Grupo e tipo dizem o que a coisa é; isto diz de quem ela
+ * é. `profile_id` só existe para quem participa do espaço — a mãe entra na
+ * lista sem nunca fazer login.
+ */
+export type Wanter = Tables["wanters"]["Row"];
 export type Workspace = Tables["workspaces"]["Row"];
 
 /**
@@ -65,6 +72,7 @@ export type Item = Omit<Tables["items"]["Row"], "priority" | "status"> & {
 export type ListData = {
   groups: Group[];
   types: ItemType[];
+  wanters: Wanter[];
   items: Item[];
   priceSummaries: PriceSummary[];
 };
@@ -77,6 +85,8 @@ export type ItemDraft = {
   quantity: number;
   /** "kg", "un", "pct" — livre. Nulo quando a contagem basta. */
   unit: string | null;
+  /** Ids de `Wanter`. Vazio é "ninguém em particular". */
+  wanterIds: string[];
   priority: Priority;
   link: string | null;
   note: string | null;

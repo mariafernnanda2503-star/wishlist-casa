@@ -50,6 +50,11 @@
   --color-type: hsl(265 45% 36%);
   --color-type-soft: hsl(268 30% 93%);
 
+  /* Quem quer o item. Fica no azul-petróleo para não disputar com grupo
+     (coral) nem com tipo (roxo): as três tags convivem na mesma linha. */
+  --color-wanter: hsl(198 52% 30%);
+  --color-wanter-soft: hsl(198 34% 91%);
+
   --color-priority-alta: hsl(347 68% 43%); /* mesmo vermelho destrutivo */
   --color-priority-alta-soft: hsl(347 44% 94%);
   --color-priority-media: hsl(38 85% 32%);

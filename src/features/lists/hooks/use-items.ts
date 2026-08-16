@@ -48,6 +48,7 @@ function toRow(draft: ItemDraft, listId: string) {
     price_target: draft.priceTarget,
     quantity: draft.quantity,
     unit: draft.unit,
+    wanter_ids: draft.wanterIds,
     priority: draft.priority,
     link: draft.link,
     note: draft.note,

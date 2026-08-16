@@ -2,21 +2,25 @@
 
 import { useMemo } from "react";
 
+import { cn } from "@/shared/lib/cn";
 import { SearchField, Select, type SelectOption } from "@/ui/primitives";
 
 import { ALL, PRIORITIES, PRIORITY_LABEL } from "../lib";
-import { type Group, type ItemType } from "../types";
+import { type Group, type ItemType, type Wanter } from "../types";
 
 export type Filters = {
   search: string;
   groupId: string;
   typeId: string;
   priority: string;
+  wanterId: string;
 };
 
 type FiltersBarProps = {
   groups: Group[];
   types: ItemType[];
+  /** Vazio na lista de mercado, onde "quem quer" não se aplica. */
+  wanters: Wanter[];
   filters: Filters;
   onChange: (filters: Filters) => void;
 };
@@ -26,7 +30,7 @@ const FILTER_TRIGGER = "bg-surface-alt text-[13.5px]";
 /** Primeira entrada limpa o filtro; o rótulo do gatilho fica fora da lista. */
 const RESET: SelectOption = { value: ALL, label: "Todas" };
 
-export function FiltersBar({ groups, types, filters, onChange }: FiltersBarProps) {
+export function FiltersBar({ groups, types, wanters, filters, onChange }: FiltersBarProps) {
   function update<K extends keyof Filters>(field: K, value: Filters[K]) {
     onChange({ ...filters, [field]: value });
   }
@@ -38,6 +42,13 @@ export function FiltersBar({ groups, types, filters, onChange }: FiltersBarProps
   const typeOptions = useMemo(
     () => [RESET, ...types.map((type) => ({ value: type.id, label: type.name }))],
     [types],
+  );
+  const wanterOptions = useMemo(
+    () => [
+      { value: ALL, label: "Todos" },
+      ...wanters.map((wanter) => ({ value: wanter.id, label: wanter.name })),
+    ],
+    [wanters],
   );
   const priorityOptions = useMemo(
     () => [
@@ -89,9 +100,22 @@ export function FiltersBar({ groups, types, filters, onChange }: FiltersBarProps
           value={filters.priority}
           onChange={(value) => update("priority", value)}
           compact
-          wrapperClassName="col-span-2 min-w-0 sm:flex-1"
+          wrapperClassName={cn("min-w-0 sm:flex-1", wanters.length === 0 && "col-span-2")}
           className={FILTER_TRIGGER}
         />
+        {wanters.length > 0 ? (
+          <Select
+            aria-label="Filtrar por quem quer"
+            placeholder="Quem quer"
+            emptyValue={ALL}
+            options={wanterOptions}
+            value={filters.wanterId}
+            onChange={(value) => update("wanterId", value)}
+            compact
+            wrapperClassName="min-w-0 sm:flex-1"
+            className={FILTER_TRIGGER}
+          />
+        ) : null}
       </div>
     </div>
   );

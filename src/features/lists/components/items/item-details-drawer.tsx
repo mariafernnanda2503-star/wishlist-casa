@@ -17,6 +17,7 @@ import { type ItemFormValues } from "../../schemas";
 import {
   type Group,
   type ItemType,
+  type Wanter,
   type Item,
   type ItemDraft,
   type ListKind,
@@ -32,6 +33,7 @@ type ItemDetailsDrawerProps = {
   item: Item;
   groups: Group[];
   types: ItemType[];
+  wanters: Wanter[];
   kind: ListKind;
   groupName: string;
   typeName: string;
@@ -41,6 +43,7 @@ type ItemDetailsDrawerProps = {
   onSave: (id: string, draft: ItemDraft) => Promise<boolean>;
   onCreateGroup: (name: string) => Promise<string | null>;
   onCreateType: (name: string) => Promise<string | null>;
+  onCreateWanter: (name: string) => Promise<string | null>;
   onDelete: () => void;
 };
 
@@ -62,6 +65,7 @@ function toFormValues(item: Item): ItemFormValues {
     priceTarget: priceToInput(item.price_target),
     quantity: String(item.quantity).replace(".", ","),
     unit: item.unit ?? "",
+    wanterIds: item.wanter_ids,
     priority: item.priority,
     link: item.link ?? "",
     note: item.note ?? "",
@@ -74,6 +78,7 @@ export function ItemDetailsDrawer({
   item,
   groups,
   types,
+  wanters,
   kind,
   groupName,
   typeName,
@@ -83,8 +88,12 @@ export function ItemDetailsDrawer({
   onSave,
   onCreateGroup,
   onCreateType,
+  onCreateWanter,
   onDelete,
 }: ItemDetailsDrawerProps) {
+  const wanterNames = wanters.flatMap((wanter) =>
+    item.wanter_ids.includes(wanter.id) ? [wanter.name] : [],
+  );
   const [editing, setEditing] = useState(false);
   const [section, setSection] = useState<DetailsSection>("summary");
   const [timelineVersion, setTimelineVersion] = useState(0);
@@ -169,6 +178,7 @@ export function ItemDetailsDrawer({
         <ItemForm
           groups={groups}
           types={types}
+          wanters={wanters}
           kind={kind}
           initialValues={toFormValues(item)}
           submitLabel="Salvar alterações"
@@ -177,6 +187,7 @@ export function ItemDetailsDrawer({
           onSubmit={handleSave}
           onCreateGroup={onCreateGroup}
           onCreateType={onCreateType}
+          onCreateWanter={onCreateWanter}
         />
       ) : (
         <div>
@@ -233,6 +244,22 @@ export function ItemDetailsDrawer({
                       <Tag className="bg-type-soft text-type">{typeName}</Tag>
                     </dd>
                   </div>
+                  {kind === "shopping" ? null : (
+                    <div className="bg-surface-alt col-span-2 px-3 py-2.5">
+                      <dt className={DETAIL_LABEL}>Quem quer</dt>
+                      <dd className="flex flex-wrap gap-1">
+                        {wanterNames.length === 0 ? (
+                          <span className="text-ink-soft text-sm">Ninguém em particular</span>
+                        ) : (
+                          wanterNames.map((name) => (
+                            <Tag key={name} className="bg-wanter-soft text-wanter">
+                              {name}
+                            </Tag>
+                          ))
+                        )}
+                      </dd>
+                    </div>
+                  )}
                 </dl>
               </div>
 

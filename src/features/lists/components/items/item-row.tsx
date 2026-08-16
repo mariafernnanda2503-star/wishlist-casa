@@ -20,6 +20,8 @@ type ItemRowProps = {
   item: Item;
   groupName: string;
   typeName: string;
+  /** Vazio quando ninguém foi marcado, ou na lista de mercado. */
+  wanterNames: string[];
   onOpen: (id: string) => void;
   onToggleStatus: (item: Item) => void;
   onChangePriority: (id: string, priority: Priority) => void;
@@ -29,6 +31,7 @@ export function ItemRow({
   item,
   groupName,
   typeName,
+  wanterNames,
   onOpen,
   onToggleStatus,
   onChangePriority,
@@ -80,6 +83,17 @@ export function ItemRow({
           >
             {item.name}
           </button>
+          {/* Junto do nome, não em coluna própria: só alguns itens são de
+              alguém, e uma coluna quase vazia custa largura em todas as linhas. */}
+          {wanterNames.length > 0 ? (
+            <span className="mt-0.5 flex flex-wrap gap-1">
+              {wanterNames.map((name) => (
+                <Tag key={name} className="bg-wanter-soft text-wanter">
+                  {name}
+                </Tag>
+              ))}
+            </span>
+          ) : null}
         </div>
 
         <div className="hidden min-w-0 max-sm:block">
@@ -95,6 +109,7 @@ export function ItemRow({
             {priority}
             <span className="text-ink-soft min-w-0 flex-1 truncate text-[11px]">
               {quantityText ? `${quantityText} · ` : ""}
+              {wanterNames.length > 0 ? `${wanterNames.join(", ")} · ` : ""}
               {groupName} · {typeName}
             </span>
             <span className="text-jade shrink-0 text-[13px] font-semibold tabular-nums">

@@ -8,7 +8,9 @@ import { Button, Input, Select } from "@/ui/primitives";
 
 import { PRIORITIES, PRIORITY_FORM_LABEL, priceToInput } from "../../lib";
 import { itemDraftSchema, type ItemFormValues } from "../../schemas";
-import { type Group, type ItemType, type ItemDraft, type ListKind } from "../../types";
+import { type Group, type ItemType, type ItemDraft, type ListKind, type Wanter } from "../../types";
+
+import { WanterPicker } from "./wanter-picker";
 
 export const EMPTY_ITEM_FORM: ItemFormValues = {
   name: "",
@@ -16,6 +18,7 @@ export const EMPTY_ITEM_FORM: ItemFormValues = {
   priceTarget: "",
   quantity: "1",
   unit: "",
+  wanterIds: [],
   priority: "media",
   link: "",
   note: "",
@@ -26,6 +29,7 @@ export const EMPTY_ITEM_FORM: ItemFormValues = {
 type ItemFormProps = {
   groups: Group[];
   types: ItemType[];
+  wanters: Wanter[];
   /**
    * O que a lista pede em cada caso. No mercado o item tem unidade e o preço é
    * o que se costuma pagar; alvo de preço e link são de quem persegue uma
@@ -39,12 +43,14 @@ type ItemFormProps = {
   onSubmit: (draft: ItemDraft) => void | Promise<void>;
   onCreateGroup: (name: string) => Promise<string | null>;
   onCreateType: (name: string) => Promise<string | null>;
+  onCreateWanter: (name: string) => Promise<string | null>;
   focusNameOnMount?: boolean;
 };
 
 export function ItemForm({
   groups,
   types,
+  wanters,
   kind = "wishlist",
   initialValues = EMPTY_ITEM_FORM,
   submitLabel,
@@ -52,6 +58,7 @@ export function ItemForm({
   onSubmit,
   onCreateGroup,
   onCreateType,
+  onCreateWanter,
   focusNameOnMount = false,
 }: ItemFormProps) {
   const [values, setValues] = useState<ItemFormValues>(initialValues);
@@ -220,6 +227,16 @@ export function ItemForm({
         value={values.priority}
         onChange={(value) => setField("priority", value as ItemFormValues["priority"])}
       />
+
+      {/* No mercado o arroz não é "de alguém" — é da casa. */}
+      {isShopping ? null : (
+        <WanterPicker
+          wanters={wanters}
+          value={values.wanterIds}
+          onChange={(wanterIds) => setField("wanterIds", wanterIds)}
+          onCreate={onCreateWanter}
+        />
+      )}
 
       {isShopping ? null : (
         <div className="flex gap-2">

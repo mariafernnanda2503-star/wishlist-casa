@@ -34,6 +34,15 @@ export const listQueries = {
       .is("archived_at", null)
       .order("sort_order"),
 
+  wanters: (db: Client, workspaceId: string) =>
+    db
+      .from("wanters")
+      .select("*")
+      .eq("workspace_id", workspaceId)
+      .is("archived_at", null)
+      .order("sort_order")
+      .order("name"),
+
   items: (db: Client, listId: string) =>
     db
       .from("items")

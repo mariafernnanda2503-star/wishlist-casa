@@ -23,7 +23,13 @@ export function useListData(initialData: ListData, listId: string, workspaceId: 
   const supabase = useMemo(() => createClient(), []);
 
   const items = useItems(initialData.items, listId, supabase);
-  const taxonomies = useTaxonomies(initialData.groups, initialData.types, workspaceId, supabase);
+  const taxonomies = useTaxonomies(
+    initialData.groups,
+    initialData.types,
+    initialData.wanters,
+    workspaceId,
+    supabase,
+  );
   const summaries = usePriceSummaries(initialData.priceSummaries, supabase);
 
   useListRealtime(supabase, listId, {
@@ -37,9 +43,11 @@ export function useListData(initialData: ListData, listId: string, workspaceId: 
     items: items.items,
     groups: taxonomies.groups,
     types: taxonomies.types,
+    wanters: taxonomies.wanters,
     priceSummaries: summaries.priceSummaries,
     createGroup: taxonomies.createGroup,
     createType: taxonomies.createType,
+    createWanter: taxonomies.createWanter,
     // Fechar a ida ao mercado mexe em todos os itens de uma vez, por dentro do
     // banco; nenhuma escrita local sabe disso, então a tela recarrega.
     reloadItems: items.reload,

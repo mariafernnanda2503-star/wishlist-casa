@@ -37,6 +37,7 @@ export function ItemGrid({
       {items.map((item) => {
         const purchased = isAcquired(item.status);
         const quantityText = quantityBadge(item.quantity, item.unit);
+        const wanterNames = names.wanters(item.wanter_ids);
 
         function handleCardClick(event: MouseEvent<HTMLElement>) {
           if ((event.target as HTMLElement).closest("button, a, input, label")) return;
@@ -84,6 +85,7 @@ export function ItemGrid({
               className="text-ink-soft mt-2 truncate text-[11.5px]"
             >
               {quantityText ? `${quantityText} · ` : ""}
+              {wanterNames.length > 0 ? `${wanterNames.join(", ")} · ` : ""}
               {names.group(item.group_id)} · {names.type(item.type_id)}
             </p>
 

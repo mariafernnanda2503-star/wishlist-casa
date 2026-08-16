@@ -13,6 +13,8 @@ export type WorkspaceContext = {
   activeWorkspace: Workspace;
   lists: List[];
   activeList: List;
+  /** Quem participa do espaço — é o que dá nome aos uuids de autoria. */
+  profiles: Profile[];
   /** `owner` pode gerenciar participantes e apagar o workspace. */
   role: "owner" | "member";
 };
@@ -56,7 +58,6 @@ export type WishlistData = {
   groups: Group[];
   types: ItemType[];
   items: Item[];
-  profiles: Profile[];
   priceSummaries: PriceSummary[];
 };
 

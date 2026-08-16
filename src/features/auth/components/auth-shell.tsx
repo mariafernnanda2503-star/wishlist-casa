@@ -1,3 +1,5 @@
+import { BrandLogo } from "@/ui/brand-logo";
+
 /**
  * Moldura comum das telas de autenticação. Centraliza de verdade: o padding é
  * simétrico, senão `justify-center` alinha pelo espaço que sobra e o conteúdo
@@ -17,6 +19,7 @@ export function AuthShell({
 }) {
   return (
     <main className="mx-auto flex min-h-dvh max-w-[340px] flex-col justify-center px-5 py-10">
+      <BrandLogo priority className="mx-auto mb-7 size-20" />
       {title ? (
         <header className="mb-6 text-center">
           <h1 className="text-xl font-semibold">{title}</h1>

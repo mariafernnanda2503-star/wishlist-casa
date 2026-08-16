@@ -58,7 +58,7 @@ export function PriceSparkline({ checks, selectedId, onSelect }: PriceSparklineP
         </span>
       </figcaption>
 
-      <div className={cn("relative mt-2 h-20", falling ? "text-accent" : "text-danger")}>
+      <div className={cn("relative mt-2 h-20", falling ? "text-success" : "text-danger")}>
         <svg
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
@@ -94,7 +94,7 @@ export function PriceSparkline({ checks, selectedId, onSelect }: PriceSparklineP
               aria-pressed={active}
               className={cn(
                 "bg-surface focus-visible:shadow-control-focus absolute size-3 -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-full border-2 border-current transition-[transform,background-color] duration-100 focus-visible:outline-none",
-                active && (falling ? "bg-accent-soft scale-125" : "bg-danger-soft scale-125"),
+                active && (falling ? "bg-success-soft scale-125" : "bg-danger-soft scale-125"),
               )}
               style={{ left: `${x}%`, top: `${y}%` }}
             />

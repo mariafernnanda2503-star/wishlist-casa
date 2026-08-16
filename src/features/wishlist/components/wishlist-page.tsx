@@ -4,12 +4,20 @@ import { useMemo, useState, type KeyboardEvent } from "react";
 
 import { SignOutButton } from "@/features/auth/components";
 import { cn } from "@/shared/lib/cn";
+import { type SharedTarget } from "@/shared/lib/share-target";
+import { BrandLogo } from "@/ui/brand-logo";
 import { UsersIcon } from "@/ui/icons";
 import { Button } from "@/ui/primitives";
 
 import { useWishlist } from "../hooks";
-import { ALL, computeTotals, isAcquired, normalizeText, PRIORITY_ORDER } from "../lib";
-import { type SharedDraft } from "../lib";
+import {
+  ALL,
+  computeTotals,
+  createNameLookup,
+  isAcquired,
+  normalizeText,
+  PRIORITY_ORDER,
+} from "../lib";
 import { type Item, type Priority, type WishlistData, type WorkspaceContext } from "../types";
 
 import { AddItemPanel, type ViewMode } from "./add-item-panel";
@@ -31,7 +39,7 @@ type WishlistPageProps = {
   context: WorkspaceContext;
   currentUserId: string;
   /** Veio de um compartilhamento — abre o cadastro já preenchido. */
-  sharedDraft: SharedDraft | null;
+  sharedDraft: SharedTarget | null;
 };
 
 export function WishlistPage({
@@ -44,6 +52,7 @@ export function WishlistPage({
     items,
     groups,
     types,
+    priceSummaries,
     createGroup,
     createType,
     addItem,
@@ -88,8 +97,8 @@ export function WishlistPage({
   // Os totais somam a lista inteira de propósito, não o resultado dos filtros:
   // "quanto falta para a casa" não muda porque alguém filtrou por cozinha.
   const totals = useMemo(
-    () => computeTotals(items, groups, initialData.priceSummaries),
-    [items, groups, initialData.priceSummaries],
+    () => computeTotals(items, groups, priceSummaries),
+    [items, groups, priceSummaries],
   );
 
   const hasActiveFilter =
@@ -115,9 +124,12 @@ export function WishlistPage({
     void deleteItem(id);
   }
 
+  // Um mapa só, montado quando grupos ou tipos mudam, servindo tabela, grade e
+  // painel — antes cada um resolvia nome do seu jeito.
+  const names = useMemo(() => createNameLookup(groups, types), [groups, types]);
+
   const tableProps = {
-    groups,
-    types,
+    names,
     emptyMessage,
     onOpen: setSelectedId,
     onToggleStatus: (item: Item) => void toggleStatus(item),
@@ -127,19 +139,22 @@ export function WishlistPage({
   return (
     <main className="mx-auto max-w-[920px] px-4 pt-4 pb-12 max-sm:px-2.5 max-sm:pt-3 max-sm:pb-10">
       <header className="bg-surface shadow-control mb-4 flex items-center justify-between gap-3 rounded-[10px] px-4 py-3 max-sm:px-3 max-sm:py-2.5">
-        <nav aria-label="Navegação estrutural" className="min-w-0">
-          <ol className="flex items-center gap-2 text-sm max-sm:gap-1.5 max-sm:text-[13px]">
-            <li className="min-w-0 max-[359px]:hidden">
-              <WorkspaceSwitcher context={context} />
-            </li>
-            <li aria-hidden="true" className="text-line font-semibold max-[359px]:hidden">
-              /
-            </li>
-            <li className="min-w-0">
-              <ListSwitcher context={context} />
-            </li>
-          </ol>
-        </nav>
+        <div className="flex min-w-0 items-center gap-3 max-sm:gap-2">
+          <BrandLogo priority className="size-8 max-sm:size-7" />
+          <nav aria-label="Navegação estrutural" className="min-w-0">
+            <ol className="flex items-center gap-2 text-sm max-sm:gap-1.5 max-sm:text-[13px]">
+              <li className="min-w-0 max-[359px]:hidden">
+                <WorkspaceSwitcher context={context} />
+              </li>
+              <li aria-hidden="true" className="text-line font-semibold max-[359px]:hidden">
+                /
+              </li>
+              <li className="min-w-0">
+                <ListSwitcher context={context} />
+              </li>
+            </ol>
+          </nav>
+        </div>
         <div className="flex shrink-0 items-center gap-2">
           <Button
             type="button"
@@ -218,7 +233,7 @@ export function WishlistPage({
           )}
         >
           Comprados
-          <Tag className="bg-accent-soft text-accent">{purchased.length}</Tag>
+          <Tag className="bg-success-soft text-success">{purchased.length}</Tag>
         </button>
       </div>
 
@@ -253,9 +268,9 @@ export function WishlistPage({
           item={selectedItem}
           groups={groups}
           types={types}
-          groupName={groups.find((group) => group.id === selectedItem.group_id)?.name ?? "—"}
-          typeName={types.find((type) => type.id === selectedItem.type_id)?.name ?? "—"}
-          profiles={initialData.profiles}
+          groupName={names.group(selectedItem.group_id)}
+          typeName={names.type(selectedItem.type_id)}
+          profiles={context.profiles}
           currentUserId={currentUserId}
           onClose={() => setSelectedId(null)}
           onSave={updateItem}

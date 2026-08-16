@@ -31,8 +31,8 @@ export function IconAction({
           iconActionBaseClassName,
           "peer size-9",
           active
-            ? "border-accent bg-accent text-on-accent shadow-control-accent"
-            : "bg-surface text-ink-soft hover:bg-surface-alt hover:text-accent",
+            ? "border-jade bg-jade text-on-jade shadow-control-accent"
+            : "bg-surface text-ink-soft hover:bg-surface-alt hover:text-jade",
           className,
         )}
         onClick={(event) => {

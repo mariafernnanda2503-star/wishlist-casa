@@ -32,7 +32,7 @@ export function Checkbox({
           "transition-[background-color,box-shadow] duration-100",
           "peer-hover:shadow-control-hover",
           // Marcado é fundo suave + marca no acento, o mesmo par das tags do
-          // app. Preencher de jade sólido faria um controle secundário
+          // app. Preencher com o coral sólido faria um controle secundário
           // competir em peso com o botão primário.
           "peer-checked:bg-accent-soft peer-checked:text-accent",
           "peer-focus-visible:shadow-control-focus",

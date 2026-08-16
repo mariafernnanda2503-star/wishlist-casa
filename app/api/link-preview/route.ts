@@ -1,8 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { parseProduct } from "@/features/wishlist/lib";
+import { fetchPublicPage, parseProduct } from "@/shared/lib/link-preview";
 import { logger } from "@/shared/lib/logger";
-import { fetchPublicPage } from "@/shared/lib/safe-fetch";
 import { createClient } from "@/shared/lib/supabase/server";
 
 // `node:dns` na guarda de SSRF não existe no runtime edge.

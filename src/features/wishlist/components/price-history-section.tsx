@@ -133,7 +133,7 @@ export function PriceHistorySection({ item, onRegistered }: PriceHistorySectionP
           </p>
         </div>
         {summary.belowTarget === true ? (
-          <Tag className="bg-accent-soft text-accent">Abaixo do alvo</Tag>
+          <Tag className="bg-success-soft text-success">Abaixo do alvo</Tag>
         ) : summary.belowTarget === false ? (
           <Tag className="bg-priority-media-soft text-priority-media">Acima do alvo</Tag>
         ) : null}
@@ -149,7 +149,7 @@ export function PriceHistorySection({ item, onRegistered }: PriceHistorySectionP
             <p
               className={cn(
                 "mt-0.5 truncate text-[10.5px] font-medium tabular-nums",
-                variation <= 0 ? "text-accent" : "text-danger",
+                variation <= 0 ? "text-success" : "text-danger",
               )}
             >
               {variation === 0
@@ -160,7 +160,7 @@ export function PriceHistorySection({ item, onRegistered }: PriceHistorySectionP
         </div>
         <div className="bg-surface-alt min-w-0 px-3 py-3 sm:px-4">
           <dt className={LABEL}>Melhor visto</dt>
-          <dd className="text-accent mt-1 truncate text-[13px] font-semibold tabular-nums sm:text-sm">
+          <dd className="text-success mt-1 truncate text-[13px] font-semibold tabular-nums sm:text-sm">
             {summary.best ? formatPrice(summary.best.price) : "—"}
           </dd>
         </div>
@@ -263,7 +263,7 @@ export function PriceHistorySection({ item, onRegistered }: PriceHistorySectionP
                   className={cn(
                     "bg-surface relative cursor-pointer px-3 py-2.5 transition-colors duration-100 sm:px-3.5",
                     active
-                      ? "bg-surface-alt before:bg-accent before:absolute before:inset-y-2 before:left-0 before:w-0.5"
+                      ? "bg-surface-alt before:bg-jade before:absolute before:inset-y-2 before:left-0 before:w-0.5"
                       : "hover:bg-surface-alt",
                   )}
                 >
@@ -328,7 +328,7 @@ export function PriceHistorySection({ item, onRegistered }: PriceHistorySectionP
                             {formatPrice(check.price)}
                           </strong>
                           {index === 0 ? (
-                            <span className="bg-accent-soft text-accent rounded-[4px] px-1.5 py-0.5 text-[9.5px] font-semibold uppercase">
+                            <span className="bg-jade-soft text-jade rounded-[4px] px-1.5 py-0.5 text-[9.5px] font-semibold uppercase">
                               Atual
                             </span>
                           ) : null}

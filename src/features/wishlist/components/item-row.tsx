@@ -37,7 +37,7 @@ export function ItemRow({
   const quantityText = item.quantity > 1 ? `×${item.quantity}` : "";
 
   const priority = <PriorityCell item={item} onChange={onChangePriority} />;
-  const groupTag = <Tag className="bg-accent-soft text-accent">{groupName}</Tag>;
+  const groupTag = <Tag className="bg-jade-soft text-jade">{groupName}</Tag>;
   const typeTag = <Tag className="bg-type-soft text-type">{typeName}</Tag>;
   const linkIcon = <ItemLink link={item.link} />;
 
@@ -76,7 +76,7 @@ export function ItemRow({
             type="button"
             title={item.note ?? undefined}
             onClick={() => onOpen(item.id)}
-            className="hover:text-accent focus-visible:text-accent max-w-full cursor-pointer text-left font-medium break-words focus-visible:outline-none sm:min-w-[140px]"
+            className="hover:text-jade focus-visible:text-jade max-w-full cursor-pointer text-left font-medium break-words focus-visible:outline-none sm:min-w-[140px]"
           >
             {item.name}
           </button>
@@ -87,7 +87,7 @@ export function ItemRow({
             type="button"
             title={item.note ?? undefined}
             onClick={() => onOpen(item.id)}
-            className="hover:text-accent focus-visible:text-accent block w-full truncate text-left text-[13.5px] font-semibold focus-visible:outline-none"
+            className="hover:text-jade focus-visible:text-jade block w-full truncate text-left text-[13.5px] font-semibold focus-visible:outline-none"
           >
             {item.name}
           </button>
@@ -97,7 +97,7 @@ export function ItemRow({
               {quantityText ? `${quantityText} · ` : ""}
               {groupName} · {typeName}
             </span>
-            <span className="text-accent shrink-0 text-[13px] font-semibold tabular-nums">
+            <span className="text-jade shrink-0 text-[13px] font-semibold tabular-nums">
               {formatPrice(item.price)}
             </span>
           </div>
@@ -120,7 +120,7 @@ export function ItemRow({
         className={cn(
           CELL,
           DESKTOP_ONLY,
-          "text-accent text-right font-semibold whitespace-nowrap tabular-nums",
+          "text-jade text-right font-semibold whitespace-nowrap tabular-nums",
         )}
       >
         {formatPrice(item.price)}

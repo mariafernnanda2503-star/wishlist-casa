@@ -18,7 +18,7 @@ export function TotalsPanel({ totals }: { totals: Totals }) {
       <div className="flex flex-wrap items-end justify-between gap-4 px-4 py-3">
         <div>
           <span className={LABEL}>Falta comprar</span>
-          <strong className="text-accent text-xl font-semibold tabular-nums">
+          <strong className="text-jade text-xl font-semibold tabular-nums">
             {formatPrice(totals.remaining)}
           </strong>
           {totals.potentialSaving > 0 ? (
@@ -73,7 +73,7 @@ export function TotalsPanel({ totals }: { totals: Totals }) {
                         {group.itemCount} {group.itemCount === 1 ? "item" : "itens"}
                       </span>
                     </span>
-                    <span className="text-accent w-24 shrink-0 text-right font-semibold tabular-nums">
+                    <span className="text-jade w-24 shrink-0 text-right font-semibold tabular-nums">
                       {formatPrice(group.remaining)}
                     </span>
                     <span className="text-ink-soft w-24 shrink-0 text-right tabular-nums">

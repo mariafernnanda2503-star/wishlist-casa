@@ -66,7 +66,7 @@ export function ItemTimeline({ itemId, profiles, currentUserId, refreshKey }: It
             <li key={event.id} className="flex gap-2.5 text-sm">
               <span
                 aria-hidden="true"
-                className="bg-accent-soft mt-1.5 size-2 shrink-0 rounded-full"
+                className="bg-jade-soft mt-1.5 size-2 shrink-0 rounded-full"
               />
               <div className="min-w-0 flex-1">
                 <p className="leading-5">

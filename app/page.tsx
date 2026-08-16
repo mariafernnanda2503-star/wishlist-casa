@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 
 import { WishlistPage } from "@/features/wishlist/components";
-import { parseSharedInput } from "@/features/wishlist/lib";
 import { getWishlistData, getWorkspaceContext } from "@/features/wishlist/queries";
+import { parseShareTarget } from "@/shared/lib/share-target";
 import { createClient } from "@/shared/lib/supabase/server";
 
 type HomeProps = {
@@ -61,7 +61,7 @@ export default async function Home({ searchParams }: HomeProps) {
       initialData={data}
       context={context}
       currentUserId={user.id}
-      sharedDraft={parseSharedInput(params)}
+      sharedDraft={parseShareTarget(params)}
     />
   );
 }

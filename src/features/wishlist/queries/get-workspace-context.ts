@@ -19,13 +19,19 @@ export async function getWorkspaceContext(params: {
 }): Promise<WorkspaceContext | null> {
   const supabase = await createClient();
 
-  const [membershipsRes, listsRes] = await Promise.all([
+  const [membershipsRes, listsRes, profilesRes] = await Promise.all([
     supabase.from("workspace_members").select("role, workspaces(*)"),
     supabase.from("lists").select("*").is("archived_at", null).order("created_at"),
+    // Vem com o contexto e não com os itens: nome de participante é do espaço,
+    // não da lista aberta. A RLS já limita a quem divide workspace.
+    supabase.from("profiles").select("*"),
   ]);
 
-  if (membershipsRes.error || listsRes.error) {
-    logger.error("workspace.context_load_failed", membershipsRes.error ?? listsRes.error);
+  if (membershipsRes.error || listsRes.error || profilesRes.error) {
+    logger.error(
+      "workspace.context_load_failed",
+      membershipsRes.error ?? listsRes.error ?? profilesRes.error,
+    );
     return null;
   }
 
@@ -66,6 +72,7 @@ export async function getWorkspaceContext(params: {
     activeWorkspace: workspace,
     lists,
     activeList,
+    profiles: profilesRes.data,
     role: membership.role === "owner" ? "owner" : "member",
   };
 }

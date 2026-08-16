@@ -5,8 +5,8 @@ import { useMemo, useState } from "react";
 import { cn } from "@/shared/lib/cn";
 import { SortIcon } from "@/ui/icons";
 
-import { PRIORITY_ORDER } from "../lib";
-import { type Group, type ItemType, type Item, type Priority } from "../types";
+import { PRIORITY_ORDER, type NameLookup } from "../lib";
+import { type Item, type Priority } from "../types";
 
 import { ItemRow } from "./item-row";
 
@@ -34,7 +34,7 @@ function SortableHead({ label, sortKey, sort, onSort }: SortableHeadProps) {
       className={cn(
         HEAD_CELL,
         "hover:bg-surface last:[&_button]:pr-3.5",
-        active && "text-accent shadow-table-header-active hover:bg-surface-alt",
+        active && "text-jade shadow-table-header-active hover:bg-surface-alt",
       )}
       aria-sort={direction === "asc" ? "ascending" : direction === "desc" ? "descending" : "none"}
     >
@@ -43,14 +43,14 @@ function SortableHead({ label, sortKey, sort, onSort }: SortableHeadProps) {
         title={`Ordenar por ${label.toLowerCase()}`}
         onClick={() => onSort(sortKey)}
         className={cn(
-          "group hover:text-ink focus-visible:text-accent focus-visible:shadow-control-focus flex w-full cursor-pointer items-center gap-1.5 px-3 pt-2.5 pb-3 transition-colors duration-100 focus-visible:outline-none",
-          active && "text-accent hover:text-accent",
+          "group hover:text-ink focus-visible:text-jade focus-visible:shadow-control-focus flex w-full cursor-pointer items-center gap-1.5 px-3 pt-2.5 pb-3 transition-colors duration-100 focus-visible:outline-none",
+          active && "text-jade hover:text-jade",
         )}
       >
         {label}
         <SortIcon
           className={cn(
-            "group-hover:text-accent size-3.5 transition-[color,opacity] duration-100",
+            "group-hover:text-jade size-3.5 transition-[color,opacity] duration-100",
             !active && "opacity-45 group-hover:opacity-100",
             direction === "asc" && "[&_.sort-down]:opacity-25",
             direction === "desc" && "[&_.sort-up]:opacity-25",
@@ -63,8 +63,7 @@ function SortableHead({ label, sortKey, sort, onSort }: SortableHeadProps) {
 
 type ItemTableProps = {
   items: Item[];
-  groups: Group[];
-  types: ItemType[];
+  names: NameLookup;
   emptyMessage: string;
   onOpen: (id: string) => void;
   onToggleStatus: (item: Item) => void;
@@ -73,19 +72,13 @@ type ItemTableProps = {
 
 export function ItemTable({
   items,
-  groups,
-  types,
+  names,
   emptyMessage,
   onOpen,
   onToggleStatus,
   onChangePriority,
 }: ItemTableProps) {
   const [sort, setSort] = useState<SortState | null>(null);
-  const groupNames = useMemo(
-    () => new Map(groups.map((group) => [group.id, group.name])),
-    [groups],
-  );
-  const typeNames = useMemo(() => new Map(types.map((type) => [type.id, type.name])), [types]);
 
   const sortedItems = useMemo(() => {
     if (!sort) return items;
@@ -98,9 +91,9 @@ export function ItemTable({
         case "priority":
           return PRIORITY_ORDER[item.priority];
         case "group":
-          return item.group_id ? (groupNames.get(item.group_id) ?? null) : null;
+          return names.group(item.group_id);
         case "type":
-          return item.type_id ? (typeNames.get(item.type_id) ?? null) : null;
+          return names.type(item.type_id);
         case "quantity":
           return item.quantity;
         case "price":
@@ -123,7 +116,7 @@ export function ItemTable({
 
       return activeSort.direction === "asc" ? comparison : -comparison;
     });
-  }, [groupNames, typeNames, items, sort]);
+  }, [names, items, sort]);
 
   function handleSort(key: SortKey) {
     setSort((current) => ({
@@ -159,8 +152,8 @@ export function ItemTable({
             <ItemRow
               key={item.id}
               item={item}
-              groupName={item.group_id ? (groupNames.get(item.group_id) ?? "—") : "—"}
-              typeName={item.type_id ? (typeNames.get(item.type_id) ?? "—") : "—"}
+              groupName={names.group(item.group_id)}
+              typeName={names.type(item.type_id)}
               onOpen={onOpen}
               onToggleStatus={onToggleStatus}
               onChangePriority={onChangePriority}

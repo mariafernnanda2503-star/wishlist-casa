@@ -10,6 +10,5 @@ export {
   PRIORITY_TAG_CLASS,
 } from "./constants";
 export { formatPrice, normalizeText, parsePriceInput, priceToInput } from "./format";
-export { parseProduct, type ProductPreview } from "./parse-product";
-export { parseSharedInput, type SharedDraft } from "./shared-link";
+export { createNameLookup, NO_NAME, type NameLookup } from "./name-lookup";
 export { computeTotals, type GroupTotal, type Totals } from "./totals";

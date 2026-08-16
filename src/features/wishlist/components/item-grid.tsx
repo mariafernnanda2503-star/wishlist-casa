@@ -5,16 +5,15 @@ import { type MouseEvent } from "react";
 import { cn } from "@/shared/lib/cn";
 import { Checkbox } from "@/ui/primitives";
 
-import { formatPrice, isAcquired } from "../lib";
-import { type Group, type ItemType, type Item, type Priority } from "../types";
+import { formatPrice, isAcquired, type NameLookup } from "../lib";
+import { type Item, type Priority } from "../types";
 
 import { ItemLink } from "./item-actions";
 import { PriorityCell } from "./priority-cell";
 
 type ItemGridProps = {
   items: Item[];
-  groups: Group[];
-  types: ItemType[];
+  names: NameLookup;
   emptyMessage: string;
   onOpen: (id: string) => void;
   onToggleStatus: (item: Item) => void;
@@ -23,8 +22,7 @@ type ItemGridProps = {
 
 export function ItemGrid({
   items,
-  groups,
-  types,
+  names,
   emptyMessage,
   onOpen,
   onToggleStatus,
@@ -33,9 +31,6 @@ export function ItemGrid({
   if (items.length === 0) {
     return <p className="text-ink-soft px-0.5 pt-2 pb-5 text-sm">{emptyMessage}</p>;
   }
-
-  const groupName = (id: string | null) => groups.find((group) => group.id === id)?.name ?? "—";
-  const typeName = (id: string | null) => types.find((type) => type.id === id)?.name ?? "—";
 
   return (
     <div className="mb-6 grid grid-cols-2 gap-2.5 sm:gap-3">
@@ -71,7 +66,7 @@ export function ItemGrid({
                     type="button"
                     title={item.note ?? undefined}
                     onClick={() => onOpen(item.id)}
-                    className="hover:text-accent focus-visible:text-accent line-clamp-2 min-h-10 max-w-full cursor-pointer text-left text-sm leading-5 font-semibold break-words focus-visible:outline-none"
+                    className="hover:text-jade focus-visible:text-jade line-clamp-2 min-h-10 max-w-full cursor-pointer text-left text-sm leading-5 font-semibold break-words focus-visible:outline-none"
                   >
                     {item.name}
                   </button>
@@ -84,15 +79,15 @@ export function ItemGrid({
             </div>
 
             <p
-              title={`${groupName(item.group_id)} · ${typeName(item.type_id)}`}
+              title={`${names.group(item.group_id)} · ${names.type(item.type_id)}`}
               className="text-ink-soft mt-2 truncate text-[11.5px]"
             >
               {item.quantity > 1 ? `×${item.quantity} · ` : ""}
-              {groupName(item.group_id)} · {typeName(item.type_id)}
+              {names.group(item.group_id)} · {names.type(item.type_id)}
             </p>
 
             <div className="border-line mt-auto flex min-w-0 items-center gap-2 border-t pt-2.5">
-              <span className="text-accent min-w-0 truncate text-[13px] font-semibold tabular-nums sm:text-sm">
+              <span className="text-jade min-w-0 truncate text-[13px] font-semibold tabular-nums sm:text-sm">
                 {formatPrice(item.price)}
               </span>
               {item.link ? (

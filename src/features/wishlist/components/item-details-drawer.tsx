@@ -168,7 +168,7 @@ export function ItemDetailsDrawer({
                 <section className="bg-surface-alt shadow-control flex min-h-28 items-end justify-between gap-4 rounded-[8px] px-4 py-3.5 sm:min-h-full sm:flex-col sm:items-start sm:justify-between sm:px-5 sm:py-4">
                   <div>
                     <span className={DETAIL_LABEL}>Preço estimado</span>
-                    <strong className="text-accent text-2xl font-semibold tabular-nums sm:text-3xl">
+                    <strong className="text-jade text-2xl font-semibold tabular-nums sm:text-3xl">
                       {formatPrice(item.price)}
                     </strong>
                   </div>
@@ -185,7 +185,7 @@ export function ItemDetailsDrawer({
                       <Tag
                         className={
                           purchased
-                            ? "bg-accent-soft text-accent"
+                            ? "bg-success-soft text-success"
                             : "bg-priority-media-soft text-priority-media"
                         }
                       >
@@ -204,7 +204,7 @@ export function ItemDetailsDrawer({
                   <div className="bg-surface-alt col-span-2 px-3 py-2.5">
                     <dt className={DETAIL_LABEL}>Grupo</dt>
                     <dd>
-                      <Tag className="bg-accent-soft text-accent">{groupName}</Tag>
+                      <Tag className="bg-jade-soft text-jade">{groupName}</Tag>
                     </dd>
                   </div>
                   <div className="bg-surface-alt col-span-2 px-3 py-2.5">
@@ -231,7 +231,7 @@ export function ItemDetailsDrawer({
                       href={item.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="bg-surface-alt text-accent shadow-control hover:bg-surface hover:shadow-control-hover focus-visible:shadow-control-focus inline-flex items-center justify-center gap-2 rounded-[6px] px-3 pt-2 pb-2.5 text-sm font-medium focus-visible:outline-none max-sm:w-full"
+                      className="bg-surface-alt text-jade shadow-control hover:bg-surface hover:shadow-control-hover focus-visible:shadow-control-focus inline-flex items-center justify-center gap-2 rounded-[6px] px-3 pt-2 pb-2.5 text-sm font-medium focus-visible:outline-none max-sm:w-full"
                     >
                       <LinkIcon />
                       Abrir página do produto

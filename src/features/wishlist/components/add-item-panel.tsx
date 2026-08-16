@@ -3,10 +3,10 @@
 import { useState } from "react";
 
 import { cn } from "@/shared/lib/cn";
+import { type SharedTarget } from "@/shared/lib/share-target";
 import { GridIcon, PlusIcon, TableIcon } from "@/ui/icons";
 import { Button, Dialog } from "@/ui/primitives";
 
-import { type SharedDraft } from "../lib";
 import { type Group, type ItemType, type ItemDraft } from "../types";
 
 import { EMPTY_ITEM_FORM, ItemForm } from "./item-form";
@@ -21,7 +21,7 @@ type AddItemPanelProps = {
   onCreateType: (name: string) => Promise<string | null>;
   viewMode: ViewMode;
   onViewModeChange: (viewMode: ViewMode) => void;
-  sharedDraft: SharedDraft | null;
+  sharedDraft: SharedTarget | null;
 };
 
 export function AddItemPanel({
@@ -66,7 +66,7 @@ export function AddItemPanel({
             className={cn(
               "bg-surface shadow-control hover:bg-surface-alt hover:shadow-control-hover focus-visible:shadow-control-focus active:shadow-control-active inline-flex size-9 cursor-pointer items-center justify-center rounded-[7px] border transition-[background-color,color,box-shadow] duration-100 focus-visible:outline-none max-sm:size-10",
               viewMode === "table"
-                ? "border-accent text-accent"
+                ? "border-jade text-jade"
                 : "text-ink-soft hover:text-ink border-transparent",
             )}
           >
@@ -81,7 +81,7 @@ export function AddItemPanel({
             className={cn(
               "bg-surface shadow-control hover:bg-surface-alt hover:shadow-control-hover focus-visible:shadow-control-focus active:shadow-control-active inline-flex size-9 cursor-pointer items-center justify-center rounded-[7px] border transition-[background-color,color,box-shadow] duration-100 focus-visible:outline-none max-sm:size-10",
               viewMode === "grid"
-                ? "border-accent text-accent"
+                ? "border-jade text-jade"
                 : "text-ink-soft hover:text-ink border-transparent",
             )}
           >
@@ -104,8 +104,8 @@ export function AddItemPanel({
               sharedDraft
                 ? {
                     ...EMPTY_ITEM_FORM,
-                    name: sharedDraft.name ?? "",
-                    link: sharedDraft.link ?? "",
+                    name: sharedDraft.title ?? "",
+                    link: sharedDraft.url ?? "",
                   }
                 : undefined
             }

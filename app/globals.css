@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
-/* Paleta da marca: jade botanical (#479C73), sangria deep (#7A1229) e o fundo
-   #E4EAE8. A base neutra é construída na mesma matiz do fundo (160°), então o
-   cinza do app nunca é cinza puro — puxa levemente para o verde e amarra com
-   o jade. A estrutura de relevo continua vindo do tema Primary.
+/* Paleta da marca: coral (#EB5757), sangria deep (#7A1229) e o fundo #E4EAE8.
+   A base neutra continua levemente esverdeada para não virar cinza puro; o jade
+   anterior permanece apenas como cor semântica de sucesso. A estrutura de
+   relevo continua vindo do tema Primary.
 
    Estes tokens são a única fonte de cor do app — o ESLint recusa cores literais
    do Tailwind (bg-green-600, text-gray-500...) no código. */
@@ -17,16 +17,23 @@
   --color-ink: hsl(160 22% 15%); /* texto principal */
   --color-ink-soft: hsl(160 10% 40%); /* texto secundário */
 
-  /* Acento — jade botanical --------------------------------------------
-     #479C73 puro dá só 3,35:1 com texto claro em cima, abaixo do mínimo para
-     o texto do botão. O sólido usa o jade escurecido (5,2:1) e o hover usa o
-     #479C73 exato: a cor da marca aparece, e clarear no hover é o movimento
-     natural sobre fundo claro. */
-  --color-accent: hsl(151 40% 34%);
-  --color-accent-hover: hsl(151 37% 44%); /* #479C73 */
-  --color-accent-soft: hsl(151 28% 88%);
+  /* Acento principal — o coral da própria marca. */
+  --color-accent: #eb5757;
+  --color-accent-hover: #d94747;
+  --color-accent-soft: hsl(0 60% 94%);
   --color-on-accent: hsl(160 18% 97%);
-  --color-ring: hsl(151 40% 34% / 0.28); /* anel de foco */
+  --color-ring: hsl(0 79% 63% / 0.28); /* anel de foco */
+
+  /* Jade secundário: navegação, valores e informação de apoio. */
+  --color-jade: hsl(151 40% 34%);
+  --color-jade-hover: hsl(151 37% 44%); /* #479C73 */
+  --color-jade-soft: hsl(151 28% 88%);
+  --color-on-jade: hsl(160 18% 97%);
+
+  /* Verde reservado a significado positivo, não mais a controles primários. */
+  --color-success: hsl(151 40% 34%);
+  --color-success-soft: hsl(151 28% 88%);
+  --color-on-success: hsl(160 18% 97%);
 
   /* Sangria deep — destrutivo e prioridade alta -------------------------
      O mesmo par que o app já usava: apagar e "urgente" compartilham a cor. */
@@ -34,12 +41,12 @@
   --color-danger-soft: hsl(347 44% 94%);
   --color-danger-line: hsl(347 38% 86%);
 
-  /* Ação de edição — azul funcional, separado do jade da ação primária. */
+  /* Ação de edição — azul funcional, separado do coral primário. */
   --color-edit: hsl(215 58% 38%);
 
   /* Apoio ---------------------------------------------------------------
      Tipo é a única matiz fora das três da marca: ela precisa se separar
-     da tag de área, que usa o jade. */
+     da tag de área, que usa o coral. */
   --color-type: hsl(265 45% 36%);
   --color-type-soft: hsl(268 30% 93%);
 
@@ -258,8 +265,8 @@ body {
 }
 
 .app-toaster [data-sonner-toast][data-type="success"] {
-  color: var(--color-on-accent);
-  background: var(--color-accent);
+  color: var(--color-on-success);
+  background: var(--color-success);
 }
 
 .app-toaster [data-sonner-toast][data-type="info"] {

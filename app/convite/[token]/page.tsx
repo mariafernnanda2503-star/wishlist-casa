@@ -1,5 +1,6 @@
 import { AcceptInvite } from "@/features/wishlist/components";
 import { createClient } from "@/shared/lib/supabase/server";
+import { BrandLogo } from "@/ui/brand-logo";
 
 type ConvitePageProps = {
   params: Promise<{ token: string }>;
@@ -18,6 +19,7 @@ export default async function ConvitePage({ params }: ConvitePageProps) {
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-[380px] flex-col justify-center px-5 py-10">
+      <BrandLogo priority className="mx-auto mb-7 size-20" />
       <AcceptInvite
         token={token}
         workspaceName={preview?.workspace_name ?? null}

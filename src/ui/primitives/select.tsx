@@ -226,9 +226,9 @@ export function Select({
         </span>
         <span
           className={cn(
-            "border-line text-ink-soft group-hover/select:text-accent flex items-center justify-center self-stretch border-l transition-colors duration-100",
+            "border-line text-ink-soft group-hover/select:text-jade flex items-center justify-center self-stretch border-l transition-colors duration-100",
             compact ? "w-9" : "w-[43px]",
-            open && "text-accent",
+            open && "text-jade",
           )}
         >
           <ChevronDownIcon
@@ -272,7 +272,7 @@ export function Select({
                 className={cn(
                   "popover-item truncate",
                   index === activeIndex && "bg-surface",
-                  option.value === value && "text-accent font-semibold",
+                  option.value === value && "text-jade font-semibold",
                 )}
               >
                 {option.label}
@@ -285,7 +285,7 @@ export function Select({
               type="button"
               disabled={creating}
               onClick={() => void createOption()}
-              className="border-line text-accent hover:bg-surface focus-visible:bg-surface mt-1 flex w-full cursor-pointer items-center gap-2 border-t px-3 pt-2.5 pb-2 text-left text-[13px] font-semibold outline-none disabled:pointer-events-none disabled:opacity-60"
+              className="border-line text-jade hover:bg-surface focus-visible:bg-surface mt-1 flex w-full cursor-pointer items-center gap-2 border-t px-3 pt-2.5 pb-2 text-left text-[13px] font-semibold outline-none disabled:pointer-events-none disabled:opacity-60"
             >
               <PlusIcon className="size-3.5" />
               {creating ? "Adicionando..." : `Adicionar “${query.trim()}”`}

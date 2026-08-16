@@ -13,7 +13,7 @@ export function ItemLink({ link }: { link: string | null }) {
       title="Ver produto"
       className={cn(
         iconActionBaseClassName,
-        "bg-surface-alt text-ink-soft hover:bg-surface hover:text-accent size-[30px]",
+        "bg-surface-alt text-ink-soft hover:bg-surface hover:text-jade size-[30px]",
       )}
     >
       <LinkIcon />
